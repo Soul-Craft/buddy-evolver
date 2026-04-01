@@ -6,8 +6,11 @@ Claude Code plugin that customizes the terminal Buddy pet by patching the Mach-O
 
 ```
 .claude-plugin/plugin.json    Plugin manifest (name, version, metadata)
+.claude/settings.json         Hooks (byte-length invariant reminder)
 skills/customize-buddy/       Interactive evolution ceremony (/customize-buddy)
 skills/restore-buddy/         Revert to original buddy (/restore-buddy)
+skills/test-patch/            Dry-run validation (/test-patch)
+skills/update-species-map/    Binary version maintenance (/update-species-map)
 scripts/patch-buddy.py        Binary patching engine (Python 3)
 ```
 
@@ -56,6 +59,20 @@ After patching, the binary is re-signed with `codesign --force --sign -`.
 ## Platform
 
 macOS only. Requires `codesign` and Python 3.
+
+## Automations
+
+### Hook: byte-length protection
+
+A `PreToolUse` hook in `.claude/settings.json` fires when editing `patch-buddy.py`. It injects a reminder about the byte-length invariant into Claude's context. This is a prompt-based hook (awareness, not enforcement).
+
+### Skill: /test-patch
+
+Runs the patching script in `--dry-run` mode with all patch types to verify anchor patterns still match the current binary. Use after Claude Code updates.
+
+### Skill: /update-species-map
+
+Investigates the binary when patterns break. Searches for the anchor pattern, extracts variable names, compares against `SPECIES_VAR_MAP`, and suggests updates. Use when `/test-patch` reports failures.
 
 ## Modifying the script
 
