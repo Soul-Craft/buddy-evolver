@@ -18,12 +18,7 @@ Restart Claude Code after installing.
 /buddy evolve
 ```
 
-An interactive evolution ceremony walks you through every choice:
-
-1. 🍄 Your buddy discovers a mysterious mushroom
-2. 🎭 Pick species, rarity, emoji, name, personality, and stats
-3. ✨ Watch the evolution animation
-4. 🔄 Restart Claude Code — run `/buddy` to meet your new companion
+Walks you through choosing species, rarity, emoji, name, personality, and stats — then evolves your buddy with a sparkle animation. Restart Claude Code to see your new companion.
 
 To revert anytime:
 ```

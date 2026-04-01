@@ -1,7 +1,7 @@
 ---
 name: buddy
 description: This skill should be used when the user asks to "buddy evolve", "buddy reset", "evolve buddy", "reset buddy", "change my buddy", "customize buddy", "restore buddy", "I want a different buddy", "change buddy species", "make my buddy shiny", "revert buddy", "undo buddy changes", or "get my original buddy back".
-argument-hint: "evolve | reset"
+argument-hint: "evolve or reset"
 ---
 
 # Buddy — Evolve or Reset Your Terminal Pet
@@ -15,11 +15,8 @@ Route based on `$ARGUMENTS`:
 ```
 🍄 Buddy Commands
 
-  /buddy evolve          Evolve your buddy into a new species
-  /buddy evolve dragon   Evolve directly into a dragon
-  /buddy reset           Restore your original buddy
-  /test-patch            Verify binary compatibility
-  /update-species-map    Fix patching after Claude Code updates
+  /buddy evolve   Evolve your buddy into a new species
+  /buddy reset    Restore your original buddy
 ```
 
 ---
@@ -27,8 +24,6 @@ Route based on `$ARGUMENTS`:
 ## Evolve
 
 Transform the user's Claude Code Buddy terminal pet through an interactive evolution experience.
-
-If `$ARGUMENTS` contains a species name after "evolve" (e.g., `evolve dragon`), use that species and skip to rarity selection.
 
 ### Act 1 — Discovery
 
