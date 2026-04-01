@@ -5,8 +5,9 @@ Claude Code plugin that customizes the terminal Buddy pet by patching the Mach-O
 ## Architecture
 
 ```
-.claude-plugin/plugin.json    Plugin manifest (name, version, metadata)
-.claude/settings.json         Hooks (byte-length invariant reminder)
+.claude-plugin/plugin.json       Plugin manifest (name, version, metadata)
+.claude-plugin/marketplace.json  Marketplace listing (for /plugin install)
+.claude/settings.json            Hooks (byte-length invariant reminder)
 skills/buddy/                 Main skill (/buddy evolve, /buddy reset)
 skills/test-patch/            Dry-run validation (/test-patch)
 skills/update-species-map/    Binary version maintenance (/update-species-map)
