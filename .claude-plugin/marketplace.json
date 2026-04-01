@@ -1,0 +1,23 @@
+{
+  "name": "soul-craft",
+  "owner": {
+    "name": "Soul-Craft"
+  },
+  "plugins": [
+    {
+      "name": "buddy-evolver",
+      "source": {
+        "source": "github",
+        "repo": "Soul-Craft/buddy-evolver"
+      },
+      "description": "Evolve your Claude Code Buddy terminal pet — feed it a psychedelic mushroom and watch it transform into your dream companion with custom species, rarity, emoji, name, stats, and personality",
+      "version": "1.0.0",
+      "author": {
+        "name": "Soul-Craft"
+      },
+      "homepage": "https://github.com/Soul-Craft/buddy-evolver",
+      "repository": "https://github.com/Soul-Craft/buddy-evolver",
+      "license": "MIT"
+    }
+  ]
+}

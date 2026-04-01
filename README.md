@@ -97,15 +97,14 @@ Before installing, make sure you have:
 
 ## 🔧 Install
 
-```bash
-claude plugin add github:Soul-Craft/buddy-evolver
+Run these commands **inside Claude Code** (not your regular terminal):
+
+```
+/plugin marketplace add Soul-Craft/buddy-evolver
+/plugin install buddy-evolver@soul-craft
 ```
 
-Then restart Claude Code:
-
-```bash
-pkill -f claude && claude
-```
+Then restart Claude Code to activate the plugin.
 
 This adds three slash commands: `/buddy`, `/test-patch`, and `/update-species-map`.
 
@@ -342,10 +341,10 @@ If you've customized your buddy, reset first:
 /buddy reset
 ```
 
-Then remove the plugin:
+Then remove the plugin (inside Claude Code):
 
-```bash
-claude plugin remove buddy-evolver
+```
+/plugin uninstall buddy-evolver@soul-craft
 ```
 
 If you skip the reset, your customized buddy remains until the next Claude Code auto-update replaces the binary.
