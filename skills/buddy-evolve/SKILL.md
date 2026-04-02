@@ -19,15 +19,59 @@ file "$BINARY" 2>/dev/null
 python3 -c "import json,os; c=json.load(open(os.path.expanduser('~/.claude.json'))); print(json.dumps(c.get('companion',{}), indent=2))" 2>/dev/null
 ```
 
-Read the current buddy name and species from the output. Then display the discovery scene — the current buddy encountering a mysterious mushroom. Use the buddy's actual name:
+Read the current buddy name and species from the output. Then display the discovery scene — the current buddy encountering a mysterious mushroom. Use the buddy's actual name and match the ASCII art to the current species:
 
+**Species ASCII Art (use the one matching the current species):**
+
+axolotl:
 ```
-Your buddy [NAME] waddles up curiously...
+        (      )
+    }~(______)~{
+    }~(× .. ×)~{     🍄 ?
+      ( .--. )
+       (_/  \_)
+```
 
+duck:
+```
     .---.
     (°>°)       🍄 ?
    /(   )\
     `---´
+```
+
+cat:
+```
+   /\_/\
+  ( o.o )      🍄 ?
+   > ^ <
+  /|   |\
+```
+
+dragon:
+```
+    /\___/\
+   ( ◉ ω ◉ )   🍄 ?
+   /|     |\~
+  (_|     |_)
+```
+
+capybara:
+```
+   .-~~~~-.
+  /  o  o  \    🍄 ?
+ |    __    |
+  \  (__)  /
+   '------'
+```
+
+For any other species, use a simple `[emoji]` representation.
+
+Display:
+```
+Your buddy [NAME] waddles up curiously...
+
+[species ASCII art from above]
 
 [NAME] found a mysterious mushroom!
 What will [NAME] evolve into?
@@ -95,14 +139,27 @@ Evolution Summary:
   Stats:       DEBUGGING:[n] PATIENCE:[n] CHAOS:[n] WISDOM:[n] SNARK:[n]
 ```
 
-Then display the evolution:
+Then display the evolution using the **current** species ASCII art (before evolution):
+
+For axolotl:
 ```
 [OLD_NAME] eats the mushroom... 🍄
 
-    .---.
-    (°>°)    ✨ ✨ ✨
-   /(   )\   ✨ ✨
-    `---´
+        (     )
+    }~(______)~{
+    }~(✨..✨)~{   ✨ ✨ ✨
+      ( .--. )    ✨ ✨
+       (_/  \_)
+
+Evolving...
+```
+
+For other species, use the matching art from Act 1 with sparkles added. If species art isn't listed above, use the emoji with sparkles:
+```
+[OLD_NAME] eats the mushroom... 🍄
+
+    [emoji]    ✨ ✨ ✨
+               ✨ ✨
 
 Evolving...
 ```

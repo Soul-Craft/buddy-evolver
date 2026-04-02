@@ -106,7 +106,7 @@ Run these commands **inside Claude Code** (not your regular terminal):
 
 Then restart Claude Code to activate the plugin.
 
-This adds three slash commands: `/buddy`, `/test-patch`, and `/update-species-map`.
+This adds four slash commands: `/buddy-evolve`, `/buddy-reset`, `/test-patch`, and `/update-species-map`.
 
 ---
 
@@ -116,13 +116,13 @@ This adds three slash commands: `/buddy`, `/test-patch`, and `/update-species-ma
 
 **Press START on your evolution adventure:**
 
-1. 🍄 Run `/buddy evolve`
+1. 🍄 Run `/buddy-evolve`
 2. 🎨 Design your buddy — pick species, rarity, emoji, name, personality, and stats
 3. ✨ Restart Claude Code — your new companion appears
 
 The whole process takes about 60 seconds. Every choice is yours.
 
-To revert anytime: `/buddy reset` 🔄
+To revert anytime: `/buddy-reset` 🔄
 
 ---
 
@@ -130,11 +130,11 @@ To revert anytime: `/buddy reset` 🔄
 
 ## 🕹️ Commands
 
-### `/buddy evolve`
+### `/buddy-evolve`
 
 Your buddy's evolution unfolds in four acts — like a classic RPG cutscene:
 
-**🍄 Act 1 — Discovery.** Your current buddy stumbles upon a mysterious psychedelic mushroom.
+**🍄 Act 1 — Discovery.** Your current buddy stumbles upon a mysterious psychedelic mushroom, displayed with species-accurate ASCII art.
 
 **🎨 Act 2 — Design.** Six customization steps where you control everything:
 1. **🧬 Species** — Pick from 18 species (dragon, cat, axolotl, capybara, and 14 more)
@@ -150,7 +150,7 @@ Your buddy's evolution unfolds in four acts — like a classic RPG cutscene:
 
 All evolved buddies are ✨ shiny by default. A backup of the original binary is created automatically — your save file is always safe.
 
-### `/buddy reset`
+### `/buddy-reset`
 
 🔄 Restores your original buddy by reverting all patches.
 
@@ -243,9 +243,11 @@ The important bits:
 
 - 📏 All patches maintain **exact byte length** — like fitting new sprites into the same cartridge
 - 🔍 Patterns are located by anchor searching, not hardcoded offsets
+- 🧬 **Multi-version support** — the script stores multiple known variable maps and auto-detects which one matches the current binary at runtime. No manual updates needed when switching between supported versions.
 - 💾 The original binary is **backed up automatically** before any changes — your save file is safe
 - 🔏 After patching, the binary is re-signed with `codesign`
-- 🔄 Everything is fully reversible with `/buddy reset`
+- ✅ Post-patch **binary verification** — runs `--version` after patching; auto-restores from backup if the binary is corrupted
+- 🔄 Everything is fully reversible with `/buddy-reset`
 
 ---
 
@@ -258,10 +260,12 @@ Claude Code auto-updates replace the patched binary, which reverts your buddy to
 **To re-evolve:**
 
 ```
-/buddy evolve
+/buddy-evolve
 ```
 
 Your preferences are saved, so re-application is quick — just confirm your choices and go. Like re-equipping your gear after a save reload. ⚔️
+
+The patching script auto-detects which binary version you're running and uses the matching variable map — no manual intervention needed for supported versions.
 
 **If patching fails after an update:**
 
@@ -311,7 +315,7 @@ Your existing buddy still works — only re-customization is affected until patt
 <details>
 <summary>🔁 <b>I want to change my buddy again</b></summary>
 
-Just run `/buddy evolve` again! No need to reset first — the script is re-runnable. Redesign as many times as you want.
+Just run `/buddy-evolve` again! No need to reset first — the script is re-runnable. Redesign as many times as you want.
 
 </details>
 
@@ -338,7 +342,7 @@ The original binary is always backed up before changes — like a save state bef
 If you've customized your buddy, reset first:
 
 ```
-/buddy reset
+/buddy-reset
 ```
 
 Then remove the plugin (inside Claude Code):
