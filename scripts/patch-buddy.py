@@ -24,20 +24,46 @@ from pathlib import Path
 
 # ── Constants ──────────────────────────────────────────────────────────
 
-SPECIES_VAR_MAP = {
-    "duck": "b0_",    "goose": "I0_",   "blob": "x0_",    "cat": "u0_",
-    "dragon": "m0_",  "octopus": "p0_", "owl": "g0_",     "penguin": "B0_",
-    "turtle": "d0_",  "snail": "c0_",   "axolotl": "F0_", "ghost": "U0_",
-    "robot": "Q0_",   "mushroom": "l0_", "cactus": "i0_", "rabbit": "n0_",
-    "chonk": "r0_",   "capybara": "o0_",
-}
+# Known species variable maps keyed by version label.
+# The first 4 species (duck, goose, blob, cat) form the anchor pattern.
+# Order matters: newest first so detection prefers the latest match.
+KNOWN_VAR_MAPS = [
+    {   # v2.1.90+
+        "duck": "GL_",    "goose": "ZL_",   "blob": "LL_",    "cat": "kL_",
+        "dragon": "vL_",  "octopus": "hL_", "owl": "yL_",     "penguin": "NL_",
+        "turtle": "VL_",  "snail": "SL_",   "axolotl": "CL_", "ghost": "EL_",
+        "robot": "xL_",   "mushroom": "mL_", "cactus": "IL_", "rabbit": "uL_",
+        "chonk": "pL_",   "capybara": "bL_",
+    },
+    {   # v2.1.89
+        "duck": "b0_",    "goose": "I0_",   "blob": "x0_",    "cat": "u0_",
+        "dragon": "m0_",  "octopus": "p0_", "owl": "g0_",     "penguin": "B0_",
+        "turtle": "d0_",  "snail": "c0_",   "axolotl": "F0_", "ghost": "U0_",
+        "robot": "Q0_",   "mushroom": "l0_", "cactus": "i0_", "rabbit": "n0_",
+        "chonk": "r0_",   "capybara": "o0_",
+    },
+]
+
+# Active map — set by detect_var_map() at runtime
+SPECIES_VAR_MAP: dict[str, str] = {}
 
 VALID_RARITIES = ["common", "uncommon", "rare", "epic", "legendary"]
 
 STAT_NAMES = ["debugging", "patience", "chaos", "wisdom", "snark"]
 
-# Anchor pattern to locate the Trq species array — first 4 species variable refs
-TRQ_ANCHOR = b"b0_,I0_,x0_,u0_,"
+
+def _anchor_for_map(var_map: dict[str, str]) -> bytes:
+    """Build the anchor pattern (first 4 species refs) for a given var map."""
+    return f"{var_map['duck']},{var_map['goose']},{var_map['blob']},{var_map['cat']},".encode()
+
+
+def detect_var_map(data: bytes) -> tuple[dict[str, str], bytes] | None:
+    """Try each known var map and return the first whose anchor is found in data."""
+    for var_map in KNOWN_VAR_MAPS:
+        anchor = _anchor_for_map(var_map)
+        if anchor in data:
+            return var_map, anchor
+    return None
 
 CLAUDE_JSON = Path.home() / ".claude.json"
 BACKUP_DIR = Path.home() / ".claude" / "backups"
@@ -128,25 +154,30 @@ def find_all(data: bytearray, pattern: bytes) -> list[int]:
     return results
 
 
-def patch_species(data: bytearray, target_species: str) -> int:
+def patch_species(data: bytearray, target_species: str, anchor: bytes) -> int:
     """Replace ALL species variable refs in the Trq array with the target species."""
     target_var = SPECIES_VAR_MAP[target_species].encode()
     assert len(target_var) == 3, f"Species var must be 3 bytes, got {len(target_var)}"
 
     # Find all Trq array locations via anchor pattern
-    anchors = find_all(data, TRQ_ANCHOR)
+    anchors = find_all(data, anchor)
     if not anchors:
-        print("  [!] WARNING: Could not find species array (Trq) — binary may have changed")
+        print("  [!] WARNING: Could not find species array — binary may have changed")
         return 0
 
     patches = 0
     for anchor_idx in anchors:
-        # The Trq array starts at the anchor and contains comma-separated 3-char variable refs
-        # Scan forward to find the array bounds (ends with ']')
+        # The species array is `[GL_,ZL_,...,pL_]` — the `[` is immediately
+        # before the first variable ref (1 byte back from anchor).
+        # Var declarations like `var koq,c2,GL_,ZL_,...` also contain the
+        # anchor but their `[` is 50+ bytes away.  Skip those.
         start = anchor_idx
         # Scan backward to find '['
         while start > 0 and data[start:start+1] != b'[':
             start -= 1
+        # Only patch if '[' is within 2 bytes of the anchor (real array literal)
+        if anchor_idx - start > 2:
+            continue
         # Scan forward from anchor to find closing ']'
         end = anchor_idx
         while end < len(data) and data[end:end+1] != b']':
@@ -294,39 +325,41 @@ def patch_art(data: bytearray, target_species: str, emoji: str) -> int:
         old_art = bytes(data[art_start:art_end])
         old_len = len(old_art)
 
-        # Build new art: 3 variants, each with 5 lines, centered emoji
-        # Pad each line to fit and ensure total byte count matches
+        # Build new art: 3 variants, each with 5 lines, centered emoji.
+        # IMPORTANT: old_art does NOT include the outer array's closing `]`
+        # (that bracket lives at art_end and is preserved). So new_art must
+        # end with the last variant's `]`, not `]]`.
         line = f'" {emoji}  "'
         empty = '"      "'
         variant = f'[{empty},{empty},{empty},{line},{empty}]'
-        new_art_str = f"[{target_var}]:[[{variant[1:]},{variant},{variant}]"
+        new_art_str = f"[{target_var}]:[[{variant[1:]},{variant},{variant}"
 
         new_art = new_art_str.encode('utf-8')
         diff = old_len - len(new_art)
 
         if diff > 0:
             # Pad with spaces inside the last empty string
-            new_art = new_art[:-2] + b' ' * diff + new_art[-2:]
+            new_art = new_art[:-1] + b' ' * diff + new_art[-1:]
         elif diff < 0:
             # Need to shrink — use shorter padding
             line_s = f'" {emoji} "'
             empty_s = '"    "'
             variant_s = f'[{empty_s},{empty_s},{empty_s},{line_s},{empty_s}]'
-            new_art_str = f"[{target_var}]:[[{variant_s[1:]},{variant_s},{variant_s}]"
+            new_art_str = f"[{target_var}]:[[{variant_s[1:]},{variant_s},{variant_s}"
             new_art = new_art_str.encode('utf-8')
             diff = old_len - len(new_art)
             if diff > 0:
-                new_art = new_art[:-2] + b' ' * diff + new_art[-2:]
+                new_art = new_art[:-1] + b' ' * diff + new_art[-1:]
             elif diff < 0:
                 # Ultra-compact
                 line_u = f'"{emoji}"'
                 empty_u = '"  "'
                 variant_u = f'[{empty_u},{empty_u},{empty_u},{line_u},{empty_u}]'
-                new_art_str = f"[{target_var}]:[[{variant_u[1:]},{variant_u},{variant_u}]"
+                new_art_str = f"[{target_var}]:[[{variant_u[1:]},{variant_u},{variant_u}"
                 new_art = new_art_str.encode('utf-8')
                 diff = old_len - len(new_art)
                 if diff > 0:
-                    new_art = new_art[:-2] + b' ' * diff + new_art[-2:]
+                    new_art = new_art[:-1] + b' ' * diff + new_art[-1:]
 
         if len(new_art) != old_len:
             print(f"  [!] WARNING: Art size mismatch ({len(new_art)} vs {old_len}) — skipping")
@@ -417,8 +450,13 @@ def load_metadata():
 # ── Main ───────────────────────────────────────────────────────────────
 
 def main():
+    global SPECIES_VAR_MAP
+
+    # Species names are the same across all known maps — use the first for argparse choices
+    all_species = list(KNOWN_VAR_MAPS[0].keys())
+
     parser = argparse.ArgumentParser(description="Buddy Customizer — evolve your Claude Code terminal pet")
-    parser.add_argument("--species", choices=list(SPECIES_VAR_MAP.keys()), help="Target species")
+    parser.add_argument("--species", choices=all_species, help="Target species")
     parser.add_argument("--rarity", choices=VALID_RARITIES, help="Target rarity tier")
     parser.add_argument("--shiny", action="store_true", help="Make buddy shiny")
     parser.add_argument("--no-shiny", action="store_true", help="Remove shiny")
@@ -480,6 +518,18 @@ def main():
     with open(binary_path, "rb") as f:
         data = bytearray(f.read())
     print(f"  Read {len(data):,} bytes")
+
+    # Detect which variable map matches this binary
+    detected = detect_var_map(data)
+    if detected:
+        SPECIES_VAR_MAP, active_anchor = detected
+        sample_var = SPECIES_VAR_MAP["duck"]
+        print(f"  Detected variable format: {sample_var} (anchor: {active_anchor.decode()}...)")
+    else:
+        # Fall back to newest known map — patches may warn individually
+        SPECIES_VAR_MAP = KNOWN_VAR_MAPS[0]
+        active_anchor = _anchor_for_map(SPECIES_VAR_MAP)
+        print("  [!] WARNING: No known anchor matched — using newest variable map as fallback")
     print()
 
     total_patches = 0
@@ -489,7 +539,7 @@ def main():
         if args.dry_run:
             print(f"  [DRY RUN] Would patch species → {args.species} ({SPECIES_VAR_MAP[args.species]})")
         else:
-            total_patches += patch_species(data, args.species)
+            total_patches += patch_species(data, args.species, active_anchor)
 
     if args.rarity:
         if args.dry_run:
