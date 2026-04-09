@@ -15,6 +15,9 @@ func saveMetadata(binaryPath: URL, species: String?, rarity: String?, shiny: Boo
         "version": getVersion(binaryPath),
         "binary_path": binaryPath.path,
     ]
+    if let hash = sha256Hex(binaryPath) {
+        meta["binary_sha256"] = hash
+    }
     if let species = species { meta["species"] = species }
     if let rarity = rarity { meta["rarity"] = rarity }
     meta["shiny"] = shiny
@@ -32,7 +35,8 @@ func saveMetadata(binaryPath: URL, species: String?, rarity: String?, shiny: Boo
     }
 
     do {
-        try data.write(to: metaFile)
+        try data.write(to: metaFile, options: .atomic)
+        try? fm.setAttributes([.posixPermissions: 0o600], ofItemAtPath: metaFile.path)
         print("  [+] Metadata saved to \(metaFile.path)")
     } catch {
         print("  [!] WARNING: Failed to save metadata: \(error)")
