@@ -106,7 +106,7 @@ Run these commands **inside Claude Code** (not your regular terminal):
 
 Then restart Claude Code to activate the plugin.
 
-This adds four slash commands: `/buddy-evolve`, `/buddy-reset`, `/test-patch`, and `/update-species-map`.
+This adds slash commands including `/buddy-evolve`, `/buddy-reset`, `/buddy-status`, `/test-patch`, `/security-audit`, and `/update-species-map`.
 
 ---
 
@@ -150,6 +150,14 @@ Your buddy's evolution unfolds in four acts — like a classic RPG cutscene:
 
 All evolved buddies are ✨ shiny by default. A backup of the original binary is created automatically — your save file is always safe.
 
+### `/buddy-status`
+
+📋 Shows your current buddy as a visual card — like checking your character sheet.
+
+- Works whether your buddy is evolved or not
+- Shows rarity badge, stats bars, personality, and age
+- Read-only — doesn't change anything
+
 ### `/buddy-reset`
 
 🔄 Restores your original buddy by reverting all patches.
@@ -176,6 +184,18 @@ If any fail, the plugin suggests running `/update-species-map`.
 🔬 **Advanced.** Investigates the binary when anchor patterns break after a major Claude Code update. Searches for updated variable names and proposes code updates.
 
 Most players will never need this — it's for when `/test-patch` reports failures.
+
+### `/security-audit`
+
+🛡️ Comprehensive health check for your buddy's integrity. Verifies:
+
+- Binary backup exists and SHA-256 hash matches
+- Codesign status is valid
+- File permissions are correct
+- Patch metadata is intact
+- Anchor patterns still match the current binary
+
+Run this if something feels off, or after a Claude Code update to make sure everything is still healthy.
 
 ---
 

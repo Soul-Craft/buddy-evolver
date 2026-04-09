@@ -7,21 +7,28 @@ Claude Code plugin that customizes the terminal Buddy pet by patching the Mach-O
 ```
 .claude-plugin/plugin.json       Plugin manifest (name, version, metadata)
 .claude-plugin/marketplace.json  Marketplace listing (for /plugin install)
-.claude-plugin/agents/           Subagents (cache-analyzer, security-reviewer)
-.claude/settings.json            Hooks (byte-length + Stop cleanup)
+.claude-plugin/agents/           Subagents (cache-analyzer, token-review)
+.claude/settings.json            Hooks (byte-length reminder + permissions)
 hooks/hooks.json                 Plugin hooks (SessionStart + PreToolUse)
 hooks/session-start.sh           SessionStart hook: injects dev context
 hooks/validate-patcher-args.sh   Security hook: validates patcher arguments
+hooks/check-doc-freshness.sh     Pre-commit doc freshness check
 agents/security-reviewer.md      Security review agent for Swift code changes
+agents/test-runner.md            Test execution agent for Swift suite
 skills/buddy-evolve/             Evolution skill (/buddy-evolve)
 skills/buddy-reset/              Reset skill (/buddy-reset)
+skills/buddy-status/             Buddy card display (/buddy-status)
 skills/test-patch/               Dry-run validation (/test-patch)
+skills/run-tests/                Swift test runner (/run-tests)
 skills/security-audit/           Security posture audit (/security-audit)
 skills/update-species-map/       Binary version maintenance (/update-species-map)
 skills/cache-clean/              Cache management skill (/cache-clean)
+skills/token-review/             Token optimization audit (/token-review)
+skills/sync-docs/                Documentation sync (/sync-docs)
 skills/start-session/            Dev session context (/start-session)
 skills/end-session/              Dev session wrap-up (/end-session)
 scripts/BuddyPatcher/            Binary patching engine (Swift, CryptoKit only)
+scripts/BuddyPatcher/Tests/      Test suite (94 tests, 8 suites)
 scripts/run-buddy-patcher.sh     Lazy-build wrapper (compiles Swift on first use)
 scripts/cache-clean.sh           Cache cleanup script (used by hook + skill)
 scripts/test-security.sh         Security validation test suite
@@ -114,17 +121,25 @@ Manual re-trigger of session context. Same information as the SessionStart hook 
 
 Automated session wrap-up. Detects what changed during the session (Swift code, skills, hooks, configs, agents) and runs appropriate checks: tests if Swift changed, security review if Swift changed, token review if skills/configs changed, compatibility check if patch logic changed, and cache cleanup always. Reports a summary table of all results.
 
+### Skill: /buddy-status
+
+Read-only display of the current buddy as a visual card with rarity flair, stat bars, and age. Reads `~/.claude.json` and `~/.claude/backups/buddy-patch-meta.json`. Shows different cards for evolved, wild (un-evolved), and missing buddies. No files modified.
+
 ### Hook: byte-length protection
 
 A `PreToolUse` hook in `.claude/settings.json` fires when editing files in `BuddyPatcher/`. It injects a reminder about the byte-length invariant into Claude's context. This is a prompt-based hook (awareness, not enforcement).
 
-### Hook: session-end cache cleanup
-
-A `Stop` hook runs `scripts/cache-clean.sh` when each Claude Code session ends. Cleans Swift `.build/` directories from worktrees and `.DS_Store` files. Silent, non-blocking (always exits 0).
-
 ### Hook: argument validation
 
 A `PreToolUse` hook in `hooks/hooks.json` fires on Bash tool calls. If the command invokes `buddy-patcher`, it validates all arguments for injection attacks and length limits before allowing execution.
+
+### Hook: pre-commit test reminder
+
+A `PreToolUse` hook in `hooks/hooks.json` fires on Bash tool calls containing `git commit`. Injects a system message reminding to run `swift test` before committing Swift code changes.
+
+### Hook: doc freshness check
+
+A `PreToolUse` hook in `hooks/hooks.json` fires on `git commit`. Checks if code files (skills, agents, hooks, scripts) were staged without corresponding updates to `CLAUDE.md` or `README.md`. Injects a reminder to run `/sync-docs` if drift is detected.
 
 ### Skill: /cache-clean
 
@@ -145,6 +160,30 @@ Runs a comprehensive security audit: binary integrity, backup health, SHA-256 ve
 ### Skill: /update-species-map
 
 Investigates the binary when patterns break. Uses `--analyze` mode to search for anchor patterns, extract variable names, and compare against `knownVarMaps`. Use when `/test-patch` reports failures.
+
+### Skill: /run-tests
+
+Runs `swift test` in `scripts/BuddyPatcher/`, parses results per suite (8 suites, 94 tests), and reports a pass/fail scorecard. Non-conversational (`disable-model-invocation: true`).
+
+### Skill: /token-review
+
+5-phase audit of plugin context footprint. Inventories all context-loaded files, evaluates against an optimization checklist, and reports token savings opportunities. Optional `--apply` flag for automated optimization.
+
+### Skill: /sync-docs
+
+Compares actual project structure against CLAUDE.md and README.md using the `docs-reviewer` agent. Applies recommended edits to fix gaps, stale references, and incorrect paths. Run manually or when the doc freshness hook fires.
+
+### Agent: test-runner
+
+Haiku-powered subagent for building and running Swift tests. Parses output per suite and reports pass/fail with failure details. Used by `/end-session` when Swift code changes and by `/run-tests`. Tools: Bash, Read, Glob, Grep.
+
+### Agent: token-review
+
+Haiku-powered subagent for deep context footprint analysis. Inventories context-loaded files, evaluates against optimization checklist, and scores each check. Used by `/token-review` skill and `/end-session`. Tools: Read, Glob, Grep, Bash.
+
+### Agent: docs-reviewer
+
+Haiku-powered read-only agent that compares actual project structure against documentation. Globs for all skills, agents, hooks, Swift sources, and scripts, then checks each against CLAUDE.md and README.md. Reports gaps as `MISSING_FROM_DOCS`, `STALE_IN_DOCS`, `PATH_MISMATCH`, or `DESCRIPTION_OUTDATED`.
 
 ## Modifying the Swift source
 
@@ -169,7 +208,10 @@ When updating for new Claude Code versions:
 scripts/BuddyPatcher/
   Package.swift                  SPM manifest (zero dependencies)
   Sources/BuddyPatcher/
-    main.swift                   CLI entry point, argument parsing, orchestration
+    main.swift                   CLI entry point, orchestration
+  Sources/BuddyPatcherLib/
+    ArgumentParsing.swift        CLI argument parsing, help output
+    Analyze.swift                Binary introspection (--analyze mode)
     Validation.swift             Input validation (emoji, name, personality, stats, binary path)
     ByteUtils.swift              findAll(), findFirst(), utf8Bytes() helpers
     BinaryDiscovery.swift        findBinary(), getVersion(), PatchError
@@ -178,4 +220,5 @@ scripts/BuddyPatcher/
     SoulPatcher.swift            patchSoul() — ~/.claude.json updates
     BackupRestore.swift          ensureBackup(), restoreBackup(), verifyBinary(), sha256Hex()
     Metadata.swift               saveMetadata(), loadMetadata()
+  Tests/BuddyPatcherTests/       94 tests across 8 suites
 ```
