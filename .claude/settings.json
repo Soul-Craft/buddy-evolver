@@ -3,37 +3,17 @@
     "allow": [
       "Bash(python3 *patch-buddy.py*)",
       "Bash(*readlink ~/.local/bin/claude*)",
-      "Bash(*import json*claude.json*)",
-      "Bash(*run-buddy-patcher.sh*)",
-      "Bash(*test-security.sh*)",
-      "Bash(*swift build*BuddyPatcher*)",
-      "Bash(cd *BuddyPatcher* && swift test*)",
-      "Bash(cd *BuddyPatcher* && swift build*)"
+      "Bash(*import json*claude.json*)"
     ]
   },
   "hooks": {
-    "Stop": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash \"${CLAUDE_PLUGIN_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || echo .)}/scripts/cache-clean.sh\" 2>/dev/null; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "echo '\\n💡 Session ending — run /token-review to audit plugin token footprint.'"
-          }
-        ]
-      }
-    ],
     "PreToolUse": [
       {
         "matcher": "Edit|Write",
         "hooks": [
           {
             "type": "command",
-            "command": "if echo \"$TOOL_INPUT\" | grep -q 'BuddyPatcher\\|patch-buddy.py'; then echo '⚠️ BYTE-LENGTH INVARIANT: Every binary patch MUST produce output identical in byte length to the original. Use .atomic on all Data.write() calls. Add input validation in Validation.swift for new arguments. Run scripts/test-security.sh to verify.'; fi"
+            "command": "if echo \"$TOOL_INPUT\" | grep -q 'patch-buddy.py'; then echo '⚠️ BYTE-LENGTH INVARIANT: Every binary patch MUST produce output identical in byte length to the original. Verify all assert len() checks and test with --dry-run before committing.'; fi"
           }
         ]
       }
