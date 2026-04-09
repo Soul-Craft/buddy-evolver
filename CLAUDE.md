@@ -9,7 +9,8 @@ Claude Code plugin that customizes the terminal Buddy pet by patching the Mach-O
 .claude-plugin/marketplace.json  Marketplace listing (for /plugin install)
 .claude-plugin/agents/           Subagents (cache-analyzer, security-reviewer)
 .claude/settings.json            Hooks (byte-length + Stop cleanup)
-hooks/hooks.json                 Plugin hooks (PreToolUse arg validation)
+hooks/hooks.json                 Plugin hooks (SessionStart + PreToolUse)
+hooks/session-start.sh           SessionStart hook: injects dev context
 hooks/validate-patcher-args.sh   Security hook: validates patcher arguments
 agents/security-reviewer.md      Security review agent for Swift code changes
 skills/buddy-evolve/             Evolution skill (/buddy-evolve)
@@ -18,6 +19,8 @@ skills/test-patch/               Dry-run validation (/test-patch)
 skills/security-audit/           Security posture audit (/security-audit)
 skills/update-species-map/       Binary version maintenance (/update-species-map)
 skills/cache-clean/              Cache management skill (/cache-clean)
+skills/start-session/            Dev session context (/start-session)
+skills/end-session/              Dev session wrap-up (/end-session)
 scripts/BuddyPatcher/            Binary patching engine (Swift, CryptoKit only)
 scripts/run-buddy-patcher.sh     Lazy-build wrapper (compiles Swift on first use)
 scripts/cache-clean.sh           Cache cleanup script (used by hook + skill)
@@ -98,6 +101,18 @@ All user-provided inputs are validated before any write operation:
 - **Security review agent** (`agents/security-reviewer.md`): Read-only agent that reviews Swift code changes for missing validation, byte-length invariant violations, non-atomic writes, and unsafe patterns
 
 ## Automations
+
+### Hook: session-start context injection
+
+A `SessionStart` hook in `hooks/hooks.json` runs `hooks/session-start.sh` at the start of each Claude Code session. Gathers git state, binary version, compatibility status, backup health, and cache state. Outputs structured context that includes available dev skills, agents, active hooks, and critical constraints. Always exits 0 (never blocks session startup). Timeout: 10s.
+
+### Skill: /start-session
+
+Manual re-trigger of session context. Same information as the SessionStart hook but invoked as a skill. Use to refresh context mid-session or when hook output has scrolled away.
+
+### Skill: /end-session
+
+Automated session wrap-up. Detects what changed during the session (Swift code, skills, hooks, configs, agents) and runs appropriate checks: tests if Swift changed, security review if Swift changed, token review if skills/configs changed, compatibility check if patch logic changed, and cache cleanup always. Reports a summary table of all results.
 
 ### Hook: byte-length protection
 
