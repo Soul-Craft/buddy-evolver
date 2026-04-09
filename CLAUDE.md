@@ -7,7 +7,8 @@ Claude Code plugin that customizes the terminal Buddy pet by patching the Mach-O
 ```
 .claude-plugin/plugin.json       Plugin manifest (name, version, metadata)
 .claude-plugin/marketplace.json  Marketplace listing (for /plugin install)
-.claude/settings.json            Hooks (byte-length invariant reminder)
+.claude-plugin/agents/           Subagents (cache-analyzer, security-reviewer)
+.claude/settings.json            Hooks (byte-length + Stop cleanup)
 hooks/hooks.json                 Plugin hooks (PreToolUse arg validation)
 hooks/validate-patcher-args.sh   Security hook: validates patcher arguments
 agents/security-reviewer.md      Security review agent for Swift code changes
@@ -16,8 +17,10 @@ skills/buddy-reset/              Reset skill (/buddy-reset)
 skills/test-patch/               Dry-run validation (/test-patch)
 skills/security-audit/           Security posture audit (/security-audit)
 skills/update-species-map/       Binary version maintenance (/update-species-map)
+skills/cache-clean/              Cache management skill (/cache-clean)
 scripts/BuddyPatcher/            Binary patching engine (Swift, CryptoKit only)
 scripts/run-buddy-patcher.sh     Lazy-build wrapper (compiles Swift on first use)
+scripts/cache-clean.sh           Cache cleanup script (used by hook + skill)
 scripts/test-security.sh         Security validation test suite
 ```
 
@@ -100,9 +103,21 @@ All user-provided inputs are validated before any write operation:
 
 A `PreToolUse` hook in `.claude/settings.json` fires when editing files in `BuddyPatcher/`. It injects a reminder about the byte-length invariant into Claude's context. This is a prompt-based hook (awareness, not enforcement).
 
+### Hook: session-end cache cleanup
+
+A `Stop` hook runs `scripts/cache-clean.sh` when each Claude Code session ends. Cleans Swift `.build/` directories from worktrees and `.DS_Store` files. Silent, non-blocking (always exits 0).
+
 ### Hook: argument validation
 
 A `PreToolUse` hook in `hooks/hooks.json` fires on Bash tool calls. If the command invokes `buddy-patcher`, it validates all arguments for injection attacks and length limits before allowing execution.
+
+### Skill: /cache-clean
+
+Manual cache management with interactive preview. Runs dry-run first, then cleans on confirmation. Use `--all` flag to also clean the current worktree's build cache.
+
+### Agent: cache-analyzer
+
+Deep cache analysis subagent. Scans for build artifacts, orphaned worktrees, backup sizes, and disk usage. Produces a structured report with recommendations.
 
 ### Skill: /test-patch
 
