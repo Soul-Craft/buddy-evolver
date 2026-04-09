@@ -5,9 +5,9 @@
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Plugin](https://img.shields.io/badge/Claude%20Code-Plugin-blueviolet)
 
-> Your buddy found a psychedelic mushroom. What happens next is entirely up to you.
+> Your buddy found a psychedelic mushroom 🍄 What happens next is entirely up to you ✨
 
-Pick the species. Choose the rarity. Name it. Define its personality. Max out its stats. This isn't random evolution — **you design every detail**, then watch your buddy transform like a Pokemon eating a Super Mushroom.
+Pick the species. Choose the rarity. Name it. Define its personality. Max out its stats. This isn't random evolution — **you design every detail**, then watch your buddy transform as if it was a Pokemon eating a psychdelic Super Mario mushroom 🍄
 
 18 species 🧬 | 5 rarity tiers ⭐ | custom emoji 🎨 | your name ✏️ | your personality 💬 | your stats 📊
 
