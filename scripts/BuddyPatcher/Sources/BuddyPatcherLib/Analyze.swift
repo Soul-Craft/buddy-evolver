@@ -11,19 +11,22 @@ public func runAnalyze(data: [UInt8], binaryPath: URL) {
     for varMap in knownVarMaps {
         let anchor = anchorForMap(varMap)
         let anchorStr = String(bytes: anchor, encoding: .utf8) ?? "?"
-        if let idx = findFirst(in: data, pattern: anchor) {
-            print("  [+] Anchor found at offset 0x\(String(idx, radix: 16)): \(anchorStr)")
-            // Extract surrounding context
-            let start = max(0, idx - 20)
-            let end = min(data.count, idx + 200)
-            let region = Array(data[start..<end])
-            // Find array bounds
-            if let arrStart = region.lastIndex(of: 0x5B), // [
-               let arrEnd = region.firstIndex(of: 0x5D) { // ]
-                let arrContent = Array(region[arrStart...arrEnd])
+        let anchors = findAll(in: data, pattern: anchor)
+        if !anchors.isEmpty {
+            print("  [+] Anchor found (\(anchors.count) occurrence(s)), first at offset 0x\(String(anchors[0], radix: 16)): \(anchorStr)")
+            // Find the array-literal occurrence using same logic as patchSpecies:
+            // scan backward from each anchor — [ must be within 2 bytes (immediately adjacent)
+            for idx in anchors {
+                var arrStart = idx
+                while arrStart > 0 && data[arrStart] != 0x5B { arrStart -= 1 }
+                guard idx - arrStart <= 2 else { continue }
+                var arrEnd = idx
+                while arrEnd < data.count && data[arrEnd] != 0x5D { arrEnd += 1 }
+                let arrContent = Array(data[arrStart...arrEnd])
                 if let str = String(bytes: arrContent, encoding: .utf8) {
                     print("  [+] Species array: \(str)")
                 }
+                break
             }
             foundAnchor = true
             break
