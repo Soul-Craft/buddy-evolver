@@ -6,7 +6,9 @@
       "Bash(*import json*claude.json*)",
       "Bash(*run-buddy-patcher.sh*)",
       "Bash(*test-security.sh*)",
-      "Bash(*swift build*BuddyPatcher*)"
+      "Bash(*swift build*BuddyPatcher*)",
+      "Bash(cd *BuddyPatcher* && swift test*)",
+      "Bash(cd *BuddyPatcher* && swift build*)"
     ]
   },
   "hooks": {

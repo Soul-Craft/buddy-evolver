@@ -1,15 +1,17 @@
 import Foundation
 
 private let fm = FileManager.default
-private let backupDir = fm.homeDirectoryForCurrentUser
+private let defaultBackupDir = fm.homeDirectoryForCurrentUser
     .appendingPathComponent(".claude/backups")
-let metaFile = backupDir.appendingPathComponent("buddy-patch-meta.json")
+public let metaFile = defaultBackupDir.appendingPathComponent("buddy-patch-meta.json")
 
 /// Save patch metadata for auto-update recovery.
-func saveMetadata(binaryPath: URL, species: String?, rarity: String?, shiny: Bool,
-                  emoji: String?, name: String?, personality: String?,
-                  stats: [String: Any]?) {
-    try? fm.createDirectory(at: backupDir, withIntermediateDirectories: true)
+public func saveMetadata(binaryPath: URL, species: String?, rarity: String?, shiny: Bool,
+                         emoji: String?, name: String?, personality: String?,
+                         stats: [String: Any]?, metaPath: URL? = nil) {
+    let target = metaPath ?? metaFile
+    let targetDir = target.deletingLastPathComponent()
+    try? fm.createDirectory(at: targetDir, withIntermediateDirectories: true)
 
     var meta: [String: Any] = [
         "version": getVersion(binaryPath),
@@ -35,18 +37,19 @@ func saveMetadata(binaryPath: URL, species: String?, rarity: String?, shiny: Boo
     }
 
     do {
-        try data.write(to: metaFile, options: .atomic)
-        try? fm.setAttributes([.posixPermissions: 0o600], ofItemAtPath: metaFile.path)
-        print("  [+] Metadata saved to \(metaFile.path)")
+        try data.write(to: target, options: .atomic)
+        try? fm.setAttributes([.posixPermissions: 0o600], ofItemAtPath: target.path)
+        print("  [+] Metadata saved to \(target.path)")
     } catch {
         print("  [!] WARNING: Failed to save metadata: \(error)")
     }
 }
 
 /// Load saved patch metadata.
-func loadMetadata() -> [String: Any]? {
-    guard fm.fileExists(atPath: metaFile.path),
-          let data = fm.contents(atPath: metaFile.path),
+public func loadMetadata(metaPath: URL? = nil) -> [String: Any]? {
+    let target = metaPath ?? metaFile
+    guard fm.fileExists(atPath: target.path),
+          let data = fm.contents(atPath: target.path),
           let meta = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
         return nil
     }
