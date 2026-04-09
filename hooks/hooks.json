@@ -1,6 +1,17 @@
 {
-  "description": "Security validation and pre-commit test reminders for buddy-evolver",
+  "description": "Session context, security validation, and pre-commit test reminders for buddy-evolver",
   "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Bash",
