@@ -7,7 +7,7 @@ private let backupDir = fm.homeDirectoryForCurrentUser
     .appendingPathComponent(".claude/backups")
 
 /// Compute SHA-256 hex digest of a file.
-func sha256Hex(_ url: URL) -> String? {
+public func sha256Hex(_ url: URL) -> String? {
     guard let data = try? Data(contentsOf: url) else { return nil }
     let hash = SHA256.hash(data: data)
     return hash.map { String(format: "%02x", $0) }.joined()
@@ -16,7 +16,7 @@ func sha256Hex(_ url: URL) -> String? {
 private let hashFile = backupDir.appendingPathComponent("binary-sha256.txt")
 
 /// Create backups if they don't exist (idempotent).
-func ensureBackup(_ binaryPath: URL) {
+public func ensureBackup(_ binaryPath: URL) {
     let backup = binaryPath.deletingLastPathComponent()
         .appendingPathComponent("\(binaryPath.lastPathComponent).original-backup")
 
@@ -55,7 +55,7 @@ func ensureBackup(_ binaryPath: URL) {
 }
 
 /// Run patched binary with --version to verify it's not corrupted.
-func verifyBinary(_ binaryPath: URL) -> Bool {
+public func verifyBinary(_ binaryPath: URL) -> Bool {
     let process = Process()
     process.executableURL = binaryPath
     process.arguments = ["--version"]
@@ -81,7 +81,7 @@ func verifyBinary(_ binaryPath: URL) -> Bool {
 }
 
 /// Restore binary and soul from backups.
-func restoreBackup(_ binaryPath: URL) -> Bool {
+public func restoreBackup(_ binaryPath: URL) -> Bool {
     let backup = binaryPath.deletingLastPathComponent()
         .appendingPathComponent("\(binaryPath.lastPathComponent).original-backup")
 
@@ -136,7 +136,7 @@ func restoreBackup(_ binaryPath: URL) -> Bool {
 
 /// Re-sign the binary with an ad-hoc codesign.
 @discardableResult
-func resignBinary(_ binaryPath: URL) -> Bool {
+public func resignBinary(_ binaryPath: URL) -> Bool {
     let process = Process()
     process.executableURL = URL(fileURLWithPath: "/usr/bin/codesign")
     process.arguments = ["--force", "--sign", "-", binaryPath.path]

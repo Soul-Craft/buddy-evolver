@@ -3,7 +3,7 @@ import Foundation
 // ── Input Validation ────────────────────────────────────────────────
 
 /// Validate emoji: exactly 1 grapheme cluster, all scalars are emoji, max 16 UTF-8 bytes.
-func validateEmoji(_ input: String) -> String? {
+public func validateEmoji(_ input: String) -> String? {
     guard input.count == 1 else {
         fputs("Error: emoji must be exactly one character (got \(input.count))\n", stderr)
         return nil
@@ -25,7 +25,7 @@ func validateEmoji(_ input: String) -> String? {
 }
 
 /// Validate name: trimmed, non-empty, max 100 chars, no control characters.
-func validateName(_ input: String) -> String? {
+public func validateName(_ input: String) -> String? {
     let trimmed = input.trimmingCharacters(in: .whitespacesAndNewlines)
 
     guard !trimmed.isEmpty else {
@@ -49,7 +49,7 @@ func validateName(_ input: String) -> String? {
 }
 
 /// Validate personality: trimmed, non-empty, max 500 chars, no control characters.
-func validatePersonality(_ input: String) -> String? {
+public func validatePersonality(_ input: String) -> String? {
     let trimmed = input.trimmingCharacters(in: .whitespacesAndNewlines)
 
     guard !trimmed.isEmpty else {
@@ -73,7 +73,7 @@ func validatePersonality(_ input: String) -> String? {
 }
 
 /// Validate stats JSON: keys must be known stat names, values must be Int 0-100.
-func validateStats(_ json: String) -> [String: Any]? {
+public func validateStats(_ json: String) -> [String: Any]? {
     guard let jsonData = json.data(using: .utf8),
           let parsed = try? JSONSerialization.jsonObject(with: jsonData) as? [String: Any] else {
         fputs("Error: stats is not valid JSON\n", stderr)
@@ -95,7 +95,7 @@ func validateStats(_ json: String) -> [String: Any]? {
 }
 
 /// Validate --binary path: must exist, be a regular file, and be a Mach-O binary.
-func validateBinaryPath(_ path: String) -> URL? {
+public func validateBinaryPath(_ path: String) -> URL? {
     let url = URL(fileURLWithPath: (path as NSString).expandingTildeInPath)
         .standardizedFileURL
         .resolvingSymlinksInPath()
