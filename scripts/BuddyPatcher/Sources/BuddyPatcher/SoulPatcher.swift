@@ -40,7 +40,7 @@ func patchSoul(name: String?, personality: String?) -> Bool {
     var output = outputData
     output.append(0x0A) // \n
     do {
-        try output.write(to: claudeJSON)
+        try output.write(to: claudeJSON, options: .atomic)
     } catch {
         print("  [!] WARNING: Failed to write ~/.claude.json: \(error)")
         return false

@@ -8,12 +8,17 @@ Claude Code plugin that customizes the terminal Buddy pet by patching the Mach-O
 .claude-plugin/plugin.json       Plugin manifest (name, version, metadata)
 .claude-plugin/marketplace.json  Marketplace listing (for /plugin install)
 .claude/settings.json            Hooks (byte-length invariant reminder)
+hooks/hooks.json                 Plugin hooks (PreToolUse arg validation)
+hooks/validate-patcher-args.sh   Security hook: validates patcher arguments
+agents/security-reviewer.md      Security review agent for Swift code changes
 skills/buddy-evolve/             Evolution skill (/buddy-evolve)
 skills/buddy-reset/              Reset skill (/buddy-reset)
 skills/test-patch/               Dry-run validation (/test-patch)
+skills/security-audit/           Security posture audit (/security-audit)
 skills/update-species-map/       Binary version maintenance (/update-species-map)
-scripts/BuddyPatcher/            Binary patching engine (Swift, zero dependencies)
+scripts/BuddyPatcher/            Binary patching engine (Swift, CryptoKit only)
 scripts/run-buddy-patcher.sh     Lazy-build wrapper (compiles Swift on first use)
+scripts/test-security.sh         Security validation test suite
 ```
 
 ### How patching works
@@ -62,15 +67,50 @@ After patching, the binary is re-signed with `codesign --force --sign -`.
 
 macOS only. Requires Xcode Command Line Tools (provides Swift compiler and `codesign`). Zero third-party dependencies.
 
+## Security
+
+Defense-in-depth across three layers:
+
+### Layer 1: Swift input validation (`Validation.swift`)
+
+All user-provided inputs are validated before any write operation:
+- **Emoji**: Single grapheme cluster, all scalars `.isEmoji`, max 16 UTF-8 bytes
+- **Name**: Non-empty, max 100 chars, no control characters
+- **Personality**: Non-empty, max 500 chars, no control characters
+- **Stats**: JSON with known keys only, integer values 0-100
+- **Binary path** (`--binary`): Must exist, be a regular file, have Mach-O magic bytes
+
+### Layer 2: Atomic operations and integrity
+
+- All file writes use `.atomic` option (`rename(2)` under the hood)
+- SHA-256 hash of original binary stored on first backup
+- Restore verifies backup integrity against stored hash
+- Codesign failure after patching triggers auto-restore + exit(1)
+- Backup directory and files set to 0o700/0o600
+
+### Layer 3: Plugin-level enforcement
+
+- **PreToolUse hook** (`hooks/validate-patcher-args.sh`): Intercepts Bash calls to the patcher, validates arguments for shell metacharacters (`;|&$\``), length limits, and subshell injection (`$()`)
+- **Security audit skill** (`/security-audit`): On-demand check of binary integrity, backup health, codesign status, file permissions, and pattern compatibility
+- **Security review agent** (`agents/security-reviewer.md`): Read-only agent that reviews Swift code changes for missing validation, byte-length invariant violations, non-atomic writes, and unsafe patterns
+
 ## Automations
 
 ### Hook: byte-length protection
 
 A `PreToolUse` hook in `.claude/settings.json` fires when editing files in `BuddyPatcher/`. It injects a reminder about the byte-length invariant into Claude's context. This is a prompt-based hook (awareness, not enforcement).
 
+### Hook: argument validation
+
+A `PreToolUse` hook in `hooks/hooks.json` fires on Bash tool calls. If the command invokes `buddy-patcher`, it validates all arguments for injection attacks and length limits before allowing execution.
+
 ### Skill: /test-patch
 
 Runs the patching tool in `--dry-run` mode with all patch types to verify anchor patterns still match the current binary. Use after Claude Code updates.
+
+### Skill: /security-audit
+
+Runs a comprehensive security audit: binary integrity, backup health, SHA-256 verification, codesign status, file permissions, metadata validation, and dry-run compatibility.
 
 ### Skill: /update-species-map
 
@@ -84,6 +124,9 @@ When adding new patch types:
 - Add a `[DRY RUN]` branch for `--dry-run` mode
 - Save new fields to metadata via `saveMetadata()`
 - Handle the "already patched" case (tool should be re-runnable)
+- Add input validation in `Validation.swift` for any new user-provided arguments
+- Use `.atomic` option on all `Data.write()` calls
+- Run `scripts/test-security.sh` to verify validation works
 
 When updating for new Claude Code versions:
 - Check if anchor patterns still exist in the new binary
@@ -97,11 +140,12 @@ scripts/BuddyPatcher/
   Package.swift                  SPM manifest (zero dependencies)
   Sources/BuddyPatcher/
     main.swift                   CLI entry point, argument parsing, orchestration
+    Validation.swift             Input validation (emoji, name, personality, stats, binary path)
     ByteUtils.swift              findAll(), findFirst(), utf8Bytes() helpers
     BinaryDiscovery.swift        findBinary(), getVersion(), PatchError
     VariableMapDetection.swift   knownVarMaps, detectVarMap(), anchorForMap()
     PatchEngine.swift            patchSpecies(), patchRarity(), patchShiny(), patchArt()
     SoulPatcher.swift            patchSoul() — ~/.claude.json updates
-    BackupRestore.swift          ensureBackup(), restoreBackup(), verifyBinary(), resignBinary()
+    BackupRestore.swift          ensureBackup(), restoreBackup(), verifyBinary(), sha256Hex()
     Metadata.swift               saveMetadata(), loadMetadata()
 ```

@@ -1,0 +1,17 @@
+{
+  "description": "Security hooks for buddy-evolver: validates patcher arguments before execution",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/validate-patcher-args.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

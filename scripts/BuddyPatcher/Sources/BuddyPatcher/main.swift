@@ -221,11 +221,33 @@ func runAnalyze(data: [UInt8], binaryPath: URL) {
 
 // ── Main ─────────────────────────────────────────────────────────────
 
-let opts = parseArgs()
+var opts = parseArgs()
 
 if opts.help {
     printUsage()
     exit(0)
+}
+
+// ── Input Validation ────────────────────────────────────────────────
+
+if let emoji = opts.emoji {
+    guard let validated = validateEmoji(emoji) else { exit(1) }
+    opts.emoji = validated
+}
+
+if let name = opts.name {
+    guard let validated = validateName(name) else { exit(1) }
+    opts.name = validated
+}
+
+if let personality = opts.personality {
+    guard let validated = validatePersonality(personality) else { exit(1) }
+    opts.personality = validated
+}
+
+if let statsJSON = opts.stats {
+    guard validateStats(statsJSON) != nil else { exit(1) }
+    // Keep original JSON string; it's re-parsed later in saveMetadata
 }
 
 print()
@@ -237,7 +259,8 @@ print()
 let binaryPath: URL
 do {
     if let override = opts.binary {
-        binaryPath = URL(fileURLWithPath: override)
+        guard let validated = validateBinaryPath(override) else { exit(1) }
+        binaryPath = validated
     } else {
         binaryPath = try findBinary()
     }
@@ -372,13 +395,20 @@ if !opts.dryRun && totalPatches > 0 {
     print()
     let outputData = Data(data)
     do {
-        try outputData.write(to: binaryPath)
+        try outputData.write(to: binaryPath, options: .atomic)
     } catch {
         print("  [!] ERROR: Failed to write binary: \(error)")
         exit(1)
     }
     print("  [+] Wrote \(formatNumber(data.count)) bytes with \(totalPatches) patches")
-    resignBinary(binaryPath)
+
+    if !resignBinary(binaryPath) {
+        print()
+        print("  [!] Codesign failed — restoring backup to prevent unsigned binary...")
+        let _ = restoreBackup(binaryPath)
+        print("  [!] Restored original binary. Codesign is required for macOS to run the binary.")
+        exit(1)
+    }
 
     // Verify patched binary still works
     print("  [~] Verifying patched binary...")
