@@ -1,0 +1,20 @@
+# Dependabot config for Buddy Evolver.
+#
+# The project has zero third-party runtime dependencies (Swift uses only
+# CryptoKit from the stdlib). The only thing we need to keep updated is
+# GitHub Actions versions in our workflows.
+
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "ci"
+    commit-message:
+      prefix: "ci"
+      include: "scope"

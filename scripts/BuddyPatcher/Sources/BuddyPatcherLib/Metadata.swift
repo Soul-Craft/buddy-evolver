@@ -1,7 +1,7 @@
 import Foundation
 
 private let fm = FileManager.default
-private let defaultBackupDir = fm.homeDirectoryForCurrentUser
+private let defaultBackupDir = resolvedHome
     .appendingPathComponent(".claude/backups")
 public let metaFile = defaultBackupDir.appendingPathComponent("buddy-patch-meta.json")
 

@@ -3,7 +3,7 @@ import Foundation
 /// Resolve the Claude Code binary path from the symlink.
 public func findBinary() throws -> URL {
     let fm = FileManager.default
-    let symlink = fm.homeDirectoryForCurrentUser
+    let symlink = resolvedHome
         .appendingPathComponent(".local/bin/claude")
 
     guard fm.fileExists(atPath: symlink.path) else {

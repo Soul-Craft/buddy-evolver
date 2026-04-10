@@ -1,0 +1,172 @@
+name: Quality Checks
+
+# Cheap Ubuntu-based checks that run on every push/PR.
+# Fast, deterministic, platform-agnostic — these are the checks GitHub
+# blocks merges on. Expensive macOS tests run locally (see test-all.sh).
+#
+# SECURITY: This workflow does NOT consume any untrusted GitHub event
+# data (issue titles, PR bodies, commit messages) in run: commands. All
+# `run:` steps operate only on repo file contents and hardcoded values.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: quality-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  shellcheck:
+    name: Shellcheck
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install shellcheck
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
+      - name: Run shellcheck on all shell scripts
+        run: |
+          set -euo pipefail
+          found=0
+          failed=0
+          while IFS= read -r -d '' script; do
+              found=$((found + 1))
+              echo "-- $script"
+              if ! shellcheck -S warning "$script"; then
+                  failed=$((failed + 1))
+              fi
+          done < <(find scripts hooks -name "*.sh" -type f -print0)
+          echo
+          echo "Checked $found scripts, $failed failures"
+          [ "$failed" -eq 0 ]
+
+  json-yaml:
+    name: JSON / YAML validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Validate JSON files
+        run: |
+          set -euo pipefail
+          failed=0
+          for f in \
+            .claude-plugin/plugin.json \
+            .claude-plugin/marketplace.json \
+            hooks/hooks.json \
+            .claude/settings.json; do
+              if [ -f "$f" ]; then
+                  echo "-- $f"
+                  if ! python3 -c "import json, sys; json.load(open(sys.argv[1]))" "$f"; then
+                      failed=$((failed + 1))
+                  fi
+              fi
+          done
+          [ "$failed" -eq 0 ]
+
+      - name: Validate skill frontmatter (YAML)
+        run: |
+          set -euo pipefail
+          pip install pyyaml
+          python3 <<'PY'
+          import pathlib
+          import sys
+          import yaml
+
+          failed = []
+          for skill in pathlib.Path("skills").glob("*/SKILL.md"):
+              content = skill.read_text()
+              if not content.startswith("---"):
+                  failed.append(f"{skill}: missing frontmatter")
+                  continue
+              _, fm, _body = content.split("---", 2)
+              try:
+                  meta = yaml.safe_load(fm)
+              except yaml.YAMLError as e:
+                  failed.append(f"{skill}: invalid YAML -- {e}")
+                  continue
+              if not isinstance(meta, dict):
+                  failed.append(f"{skill}: frontmatter is not a mapping")
+                  continue
+              for required in ("name", "description"):
+                  if required not in meta:
+                      failed.append(f"{skill}: missing '{required}' field")
+
+          if failed:
+              print("\n".join(f"[FAIL] {m}" for m in failed))
+              sys.exit(1)
+          print("All skill frontmatter valid")
+          PY
+
+  hygiene:
+    name: Repo hygiene
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: No committed build artifacts
+        run: |
+          set -euo pipefail
+          bad=$(find . -type d \( -name ".build" -o -name "__pycache__" \) \
+                       -not -path "./.git/*" 2>/dev/null || true)
+          if [ -n "$bad" ]; then
+              echo "[FAIL] committed build artifacts found:"
+              echo "$bad"
+              exit 1
+          fi
+
+      - name: No .DS_Store files
+        run: |
+          set -euo pipefail
+          bad=$(find . -name ".DS_Store" -not -path "./.git/*" 2>/dev/null || true)
+          if [ -n "$bad" ]; then
+              echo "[FAIL] .DS_Store files committed:"
+              echo "$bad"
+              exit 1
+          fi
+
+      - name: No committed test-results
+        run: |
+          set -euo pipefail
+          if [ -d "test-results" ] && [ -n "$(ls -A test-results 2>/dev/null || true)" ]; then
+              echo "[FAIL] test-results/ should not be committed"
+              exit 1
+          fi
+
+  doc-sync:
+    name: Docs reference all skills / agents / hooks
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check CLAUDE.md references each artifact
+        run: |
+          set -euo pipefail
+          missing=0
+          for skill_dir in skills/*/; do
+              skill=$(basename "$skill_dir")
+              if ! grep -q -F "$skill" CLAUDE.md; then
+                  echo "[FAIL] CLAUDE.md does not reference skill: $skill"
+                  missing=$((missing + 1))
+              fi
+          done
+          for agent_file in agents/*.md; do
+              agent=$(basename "$agent_file" .md)
+              if ! grep -q -F "$agent" CLAUDE.md; then
+                  echo "[FAIL] CLAUDE.md does not reference agent: $agent"
+                  missing=$((missing + 1))
+              fi
+          done
+          [ "$missing" -eq 0 ] && echo "All artifacts referenced in CLAUDE.md"
+          exit "$missing"
