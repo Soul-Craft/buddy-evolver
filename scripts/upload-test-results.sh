@@ -97,8 +97,11 @@ title = f"Local Tests (macOS) — {total_passed}/{total_tests} passed"
 
 schema_version = data.get("schema_version", 1)
 
-# Markdown summary body with tier breakdown
+# Markdown summary body with tier breakdown.
+# The first line MUST contain "N/N passed" for ci-verify-local.yml's
+# PR comment fallback check to recognise a passing run.
 lines = []
+lines.append(f"**{total_passed}/{total_tests} passed** — Local Tests (macOS)")
 lines.append(f"**Commit:** `{git.get('commit', '?')[:12]}` on `{git.get('branch', '?')}`")
 lines.append(f"**Duration:** {duration}s")
 lines.append(f"**Environment:** {env.get('os', '?')} {env.get('os_version', '?')} ({env.get('machine', '?')})")
