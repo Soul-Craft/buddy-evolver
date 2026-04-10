@@ -64,7 +64,6 @@ TEST_BINARY="$TEST_BIN_DIR/claude-test"
 TEST_BACKUP_DIR="$TEST_HOME/.claude/backups"
 
 "$BUILD_TEST_BINARY" "$TEST_BINARY" >/dev/null 2>&1
-ORIG_HASH=$(shasum -a 256 "$TEST_BINARY" | awk '{print $1}')
 
 # Apply a full-patch evolution for the group of tests that share patched state
 BUDDY_HOME="$TEST_HOME" "$BIN" --binary "$TEST_BINARY" \

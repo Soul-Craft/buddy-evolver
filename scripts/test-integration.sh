@@ -256,9 +256,7 @@ echo "  --- Group 7: Re-Patch Flow ---"
 # Test 7.1: Evolve once, then evolve again to different species
 sandbox_setup
 patch_quiet --species penguin
-FIRST_PATCH_HASH=$(shasum -a 256 "$TEST_BINARY" | awk '{print $1}')
 patch_quiet --species dragon
-SECOND_PATCH_HASH=$(shasum -a 256 "$TEST_BINARY" | awk '{print $1}')
 # Note: after patching to penguin (NL_), all species are NL_, so the anchor
 # GL_,ZL_,LL_,kL_ is gone. Second patch won't find the array.
 # This is correct behavior — the second patch would need --restore first.
