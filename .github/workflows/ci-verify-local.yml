@@ -1,0 +1,139 @@
+name: Verify Local Tests
+
+# Checks that the contributor has run local tests and uploaded results.
+# Accepts two forms of evidence (in order of preference):
+#   1. A "Local Tests (macOS)" Check Run on the head commit (created by
+#      upload-test-results.sh when the token has checks:write via GitHub App)
+#   2. A PR comment from upload-test-results.sh containing the results table
+#      (fallback used when only a PAT is available -- public-repo Checks API
+#      requires GitHub App auth)
+#
+# If neither is found, posts a sticky comment asking the contributor to run
+# scripts/test-all.sh && scripts/upload-test-results.sh.
+#
+# SECURITY: All event data flows through env: variables. No direct
+# ${{ github.event.* }} interpolation in run: blocks.
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  checks: read
+  pull-requests: write
+
+jobs:
+  verify:
+    name: Check for local test upload
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Look for evidence of local test run
+        id: check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          # ── Option 1: Check Run (requires GitHub App token) ────────
+          runs_json=$(gh api "repos/$REPO/commits/$HEAD_SHA/check-runs" --paginate)
+          status=$(echo "$runs_json" | python3 -c '
+          import json, sys
+          data = json.load(sys.stdin)
+          runs = data.get("check_runs", [])
+          matches = [r for r in runs if r.get("name") == "Local Tests (macOS)"]
+          if not matches:
+              print("missing")
+          else:
+              print(matches[0].get("conclusion", "unknown"))
+          ')
+
+          if [ "$status" != "missing" ]; then
+              echo "status=$status" >> "$GITHUB_OUTPUT"
+              echo "Found Check Run with status: $status"
+              exit 0
+          fi
+
+          # ── Option 2: PR comment fallback (PAT-based upload) ───────
+          comment_found=$(gh api "repos/$REPO/issues/$PR_NUMBER/comments" --paginate \
+              --jq '[.[] | select(.body | contains("Local Tests (macOS)"))] | length')
+
+          if [ "${comment_found:-0}" -gt 0 ]; then
+              # Check whether the comment indicates a pass or failure
+              passing=$(gh api "repos/$REPO/issues/$PR_NUMBER/comments" --paginate \
+                  --jq '[.[] | select(.body | contains("Local Tests (macOS)")) | select(.body | contains("267/267 passed") or contains("passed"))] | length')
+              if [ "${passing:-0}" -gt 0 ]; then
+                  echo "status=success" >> "$GITHUB_OUTPUT"
+                  echo "Found passing PR comment (PAT fallback)"
+              else
+                  echo "status=failure" >> "$GITHUB_OUTPUT"
+                  echo "Found failing PR comment (PAT fallback)"
+              fi
+              exit 0
+          fi
+
+          echo "status=missing" >> "$GITHUB_OUTPUT"
+          echo "No evidence of local test run found"
+
+      - name: Pass if evidence found
+        if: steps.check.outputs.status == 'success'
+        run: echo "Local tests verified (status=success)"
+
+      - name: Post sticky comment if missing or failed
+        if: steps.check.outputs.status == 'missing' || steps.check.outputs.status == 'failure'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+          STATUS: ${{ steps.check.outputs.status }}
+        run: |
+          set -euo pipefail
+          if [ "$STATUS" = "missing" ]; then
+              body='## Local tests not yet uploaded
+
+          This repository runs macOS-dependent tests locally (not in CI) to keep
+          GitHub Actions costs down. Before this PR can merge, please:
+
+          1. Run the full test suite on your macOS machine:
+             ```
+             scripts/test-all.sh
+             ```
+          2. Upload the results to GitHub:
+             ```
+             scripts/upload-test-results.sh
+             ```
+
+          Results will appear either as a Check Run or a PR comment on this commit.
+          See CLAUDE.md for more detail on the testing architecture.'
+          else
+              body='## Local tests failed
+
+          The most recent local test run on this commit reports a failure.
+          Please fix the failing tests and re-upload:
+          ```
+          scripts/test-all.sh && scripts/upload-test-results.sh
+          ```'
+          fi
+
+          existing=$(gh api "repos/$REPO/issues/$PR_NUMBER/comments" --paginate \
+                     --jq '.[] | select(.body | startswith("## Local tests")) | .id' \
+                     | head -1)
+
+          if [ -n "$existing" ]; then
+              gh api "repos/$REPO/issues/comments/$existing" \
+                  --method PATCH \
+                  -f body="$body" >/dev/null
+              echo "Updated sticky comment $existing"
+          else
+              gh api "repos/$REPO/issues/$PR_NUMBER/comments" \
+                  --method POST \
+                  -f body="$body" >/dev/null
+              echo "Posted new sticky comment"
+          fi
+
+          exit 1

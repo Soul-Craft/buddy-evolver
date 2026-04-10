@@ -1,0 +1,22 @@
+# CODEOWNERS for Buddy Evolver
+#
+# Lines are matched like .gitignore patterns; the LAST matching line wins.
+# Anyone listed is automatically requested for review when a PR touches
+# the matching files.
+
+# Default: all files owned by the org
+*                                       @Soul-Craft
+
+# Byte-critical patching logic -- extra scrutiny
+/scripts/BuddyPatcher/Sources/          @Soul-Craft
+/scripts/BuddyPatcher/Tests/            @Soul-Craft
+
+# Security-sensitive areas
+/hooks/                                 @Soul-Craft
+/scripts/test-security.sh               @Soul-Craft
+/agents/security-reviewer.md            @Soul-Craft
+
+# CI and release infrastructure
+/.github/workflows/                     @Soul-Craft
+/scripts/test-all.sh                    @Soul-Craft
+/scripts/upload-test-results.sh         @Soul-Craft

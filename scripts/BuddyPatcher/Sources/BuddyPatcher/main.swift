@@ -85,9 +85,7 @@ if opts.restore {
 }
 
 // Validate we have something to do
-let hasWork = opts.species != nil || opts.rarity != nil || opts.shiny || opts.noShiny ||
-    opts.emoji != nil || opts.name != nil || opts.personality != nil || opts.stats != nil
-if !hasWork {
+if !hasPatchWork(opts) {
     print("  [!] Nothing to customize. Use --species, --rarity, --shiny, --emoji, --name, --personality, or --stats")
     printUsage()
     exit(1)
@@ -109,67 +107,57 @@ guard let rawData = FileManager.default.contents(atPath: binaryPath.path) else {
     print("  [!] ERROR: Could not read binary at \(binaryPath.path)")
     exit(1)
 }
-var data = [UInt8](rawData)
-print("  Read \(formatNumber(data.count)) bytes")
+let inputData = [UInt8](rawData)
+print("  Read \(formatNumber(inputData.count)) bytes")
 
-// Detect variable map
-var activeVarMap: [String: String]
-var activeAnchor: [UInt8]
-
-if let detected = detectVarMap(in: data) {
-    activeVarMap = detected.varMap
-    activeAnchor = detected.anchor
-    let sampleVar = activeVarMap["duck"] ?? "?"
-    let anchorStr = String(bytes: activeAnchor, encoding: .utf8) ?? "?"
-    print("  Detected variable format: \(sampleVar) (anchor: \(anchorStr)...)")
-} else {
-    activeVarMap = knownVarMaps[0]
-    activeAnchor = anchorForMap(activeVarMap)
-    print("  [!] WARNING: No known anchor matched — using newest variable map as fallback")
-}
-print()
-
+var data: [UInt8]
 var totalPatches = 0
+var activeVarMap: [String: String]
 
-// Apply patches
-if let species = opts.species {
-    if opts.dryRun {
+if opts.dryRun {
+    // Dry-run: detect var map and report what would happen, but don't mutate
+    if let detected = detectVarMap(in: inputData) {
+        activeVarMap = detected.varMap
+        let sampleVar = activeVarMap["duck"] ?? "?"
+        let anchorStr = String(bytes: detected.anchor, encoding: .utf8) ?? "?"
+        print("  Detected variable format: \(sampleVar) (anchor: \(anchorStr)...)")
+    } else {
+        activeVarMap = knownVarMaps[0]
+        print("  [!] WARNING: No known anchor matched — using newest variable map as fallback")
+    }
+    print()
+
+    if let species = opts.species {
         print("  [DRY RUN] Would patch species → \(species) (\(activeVarMap[species] ?? "?"))")
-    } else {
-        totalPatches += patchSpecies(&data, target: species, anchor: activeAnchor, varMap: activeVarMap)
     }
-}
-
-if let rarity = opts.rarity {
-    if opts.dryRun {
+    if let rarity = opts.rarity {
         print("  [DRY RUN] Would patch rarity → \(rarity)")
-    } else {
-        totalPatches += patchRarity(&data, target: rarity)
     }
-}
-
-if opts.shiny {
-    if opts.dryRun {
+    if opts.shiny {
         print("  [DRY RUN] Would patch shiny → always true")
-    } else {
-        totalPatches += patchShiny(&data, makeShiny: true)
-    }
-} else if opts.noShiny {
-    if opts.dryRun {
+    } else if opts.noShiny {
         print("  [DRY RUN] Would patch shiny → normal (1%)")
-    } else {
-        totalPatches += patchShiny(&data, makeShiny: false)
     }
-}
-
-if let emoji = opts.emoji, let species = opts.species {
-    if opts.dryRun {
+    if let emoji = opts.emoji, opts.species != nil {
         print("  [DRY RUN] Would patch art → \(emoji)")
-    } else {
-        totalPatches += patchArt(&data, target: species, emoji: emoji, varMap: activeVarMap)
+    } else if opts.emoji != nil && opts.species == nil {
+        print("  [!] WARNING: --emoji requires --species to know which art to replace")
     }
-} else if opts.emoji != nil && opts.species == nil {
-    print("  [!] WARNING: --emoji requires --species to know which art to replace")
+
+    data = inputData
+} else {
+    // Real run: apply patches via the pipeline
+    let result = runPatchPipeline(data: inputData, opts: opts)
+    data = result.patchedData
+    totalPatches = result.totalPatches
+    activeVarMap = result.varMap
+    let sampleVar = activeVarMap["duck"] ?? "?"
+    let anchorStr = String(bytes: result.anchor, encoding: .utf8) ?? "?"
+    print("  Detected variable format: \(sampleVar) (anchor: \(anchorStr)...)")
+    print()
+    for warning in result.warnings {
+        print("  [!] WARNING: \(warning)")
+    }
 }
 
 // Write binary

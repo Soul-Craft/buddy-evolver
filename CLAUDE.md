@@ -28,10 +28,18 @@ skills/sync-docs/                Documentation sync (/sync-docs)
 skills/start-session/            Dev session context (/start-session)
 skills/end-session/              Dev session wrap-up (/end-session)
 scripts/BuddyPatcher/            Binary patching engine (Swift, CryptoKit only)
-scripts/BuddyPatcher/Tests/      Test suite (94 tests, 8 suites)
+scripts/BuddyPatcher/Tests/      Unit test suite (175 tests, 11 suites)
 scripts/run-buddy-patcher.sh     Lazy-build wrapper (compiles Swift on first use)
 scripts/cache-clean.sh           Cache cleanup script (used by hook + skill)
-scripts/test-security.sh         Security validation test suite
+scripts/build-test-binary.sh     Compiles a synthetic Mach-O with embedded patch patterns
+scripts/test-security.sh         Security validation test suite (27 tests)
+scripts/test-integration.sh      End-to-end patch/restore/metadata flows (23 tests)
+scripts/test-functional.sh       Byte-level patch correctness + Mach-O validity (19 tests)
+scripts/test-ui.sh               Buddy card rendering against fixtures (23 tests)
+scripts/test-ui-renderer.py      Standalone Python renderer (reference for /buddy-status)
+scripts/test-visual-smoke.sh     Manual pre-release visual check (interactive)
+scripts/test-all.sh              Master runner — all tiers, JSON/JUnit output
+scripts/upload-test-results.sh   Uploads results to GitHub as a Check Run
 ```
 
 ### How patching works
@@ -107,6 +115,55 @@ All user-provided inputs are validated before any write operation:
 - **Security audit skill** (`/security-audit`): On-demand check of binary integrity, backup health, codesign status, file permissions, and pattern compatibility
 - **Security review agent** (`agents/security-reviewer.md`): Read-only agent that reviews Swift code changes for missing validation, byte-length invariant violations, non-atomic writes, and unsafe patterns
 
+## Testing
+
+267 automated tests across 5 tiers, plus an interactive visual smoke test. The critical design decision: **macOS-dependent tests run locally on the contributor's machine, NOT in GitHub Actions.** GitHub runners only run cheap Ubuntu-based quality checks. This keeps CI costs bounded while still enforcing test passage on every PR.
+
+### The 5 automated tiers
+
+| Tier | Script | Tests | Purpose |
+|------|--------|-------|---------|
+| Unit | `swift test` | 175 | Swift XCTest suite — pure functions, validation, patch engine, orchestration |
+| Security | `scripts/test-security.sh` | 27 | Input validation, hook enforcement, injection checks |
+| Integration | `scripts/test-integration.sh` | 23 | End-to-end patch/restore/metadata flows against a synthetic binary |
+| Functional | `scripts/test-functional.sh` | 19 | Byte-level patch verification + Mach-O validity + codesign |
+| UI | `scripts/test-ui.sh` | 23 | Buddy card rendering against pinned JSON fixtures |
+
+Run everything: `scripts/test-all.sh` — emits `test-results/results.json`, `test-results/junit.xml`, and `test-results/full-output.log`.
+
+### Visual smoke test
+
+`scripts/test-visual-smoke.sh` is an interactive script used before releases. It renders a fixture buddy card (legendary shiny dragon) and walks the tester through a 10-item visual checklist, capturing a terminal screenshot for PR evidence. Not part of `test-all.sh`.
+
+### Test isolation via `BUDDY_HOME`
+
+Swift tests that touch the filesystem use `resolvedHome` (in `Paths.swift`) which honors the `BUDDY_HOME` env var. This is **critical**: on macOS, `FileManager.homeDirectoryForCurrentUser` reads the user database directly and ignores `HOME`, so bash test scripts must set `BUDDY_HOME` to isolate test runs from the user's real `~/.claude`. Integration and functional scripts do this automatically.
+
+### Synthetic test binary
+
+`scripts/build-test-binary.sh` compiles a small Swift program whose source embeds every patchable pattern (species array, rarity weights, shiny threshold, art block) as string constants. The resulting Mach-O binary contains those patterns in `__TEXT/__cstring` where the patcher can find them. Integration, functional, and UI tests use this binary so they never touch the real Claude Code binary.
+
+### CI architecture
+
+Three workflows in `.github/workflows/`:
+
+- **`ci-quality.yml`** (Ubuntu, runs on every push/PR) — shellcheck, JSON/YAML validation, skill frontmatter checks, repo hygiene (no `.build/`, no `.DS_Store`), doc-sync validation. Fast, deterministic, cheap.
+- **`ci-verify-local.yml`** (Ubuntu, runs on every PR) — queries the GitHub Checks API for a `Local Tests (macOS)` Check Run on the head commit. If missing or failed, posts a sticky PR comment telling the contributor to run `scripts/test-all.sh && scripts/upload-test-results.sh`.
+- **`ci-macos-fallback.yml`** (macOS-14, manual only via `workflow_dispatch` or `v*` tag push) — escape hatch for contributors without macOS access. Runs the full `test-all.sh` suite and uploads artifacts. Not part of default CI because macOS runners are expensive.
+
+### Local → GitHub bridge
+
+`scripts/upload-test-results.sh` reads `test-results/results.json` and POSTs a GitHub Check Run via `gh api`. The Check Run carries the tier breakdown, duration, environment metadata, and pass/fail counts. On permission failure (e.g. forks without `checks:write`), falls back to `gh pr comment` on the current PR.
+
+### Contributor workflow
+
+1. Edit code on macOS.
+2. Run `scripts/test-all.sh` — all 5 tiers must pass.
+3. Run `scripts/upload-test-results.sh` — results appear as a Check Run on the current commit.
+4. Push the branch, open a PR.
+5. `ci-quality.yml` runs on Ubuntu; `ci-verify-local.yml` confirms the Check Run is present and green.
+6. Maintainer reviews and merges.
+
 ## Automations
 
 ### Hook: session-start context injection
@@ -163,7 +220,7 @@ Investigates the binary when patterns break. Uses `--analyze` mode to search for
 
 ### Skill: /run-tests
 
-Runs `swift test` in `scripts/BuddyPatcher/`, parses results per suite (8 suites, 94 tests), and reports a pass/fail scorecard. Non-conversational (`disable-model-invocation: true`).
+Runs `swift test` in `scripts/BuddyPatcher/`, parses results per suite (11 suites, 175 tests), and reports a pass/fail scorecard. Non-conversational (`disable-model-invocation: true`).
 
 ### Skill: /token-review
 
@@ -208,7 +265,7 @@ When updating for new Claude Code versions:
 scripts/BuddyPatcher/
   Package.swift                  SPM manifest (zero dependencies)
   Sources/BuddyPatcher/
-    main.swift                   CLI entry point, orchestration
+    main.swift                   CLI entry point, delegates to Orchestration
   Sources/BuddyPatcherLib/
     ArgumentParsing.swift        CLI argument parsing, help output
     Analyze.swift                Binary introspection (--analyze mode)
@@ -220,5 +277,7 @@ scripts/BuddyPatcher/
     SoulPatcher.swift            patchSoul() — ~/.claude.json updates
     BackupRestore.swift          ensureBackup(), restoreBackup(), verifyBinary(), sha256Hex()
     Metadata.swift               saveMetadata(), loadMetadata()
-  Tests/BuddyPatcherTests/       94 tests across 8 suites
+    Orchestration.swift          Pure pipeline: runPatchPipeline(), hasPatchWork()
+    Paths.swift                  resolvedHome — BUDDY_HOME override for test isolation
+  Tests/BuddyPatcherTests/       175 tests across 11 suites
 ```

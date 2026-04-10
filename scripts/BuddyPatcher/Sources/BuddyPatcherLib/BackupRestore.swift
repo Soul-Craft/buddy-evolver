@@ -2,8 +2,8 @@ import Foundation
 import CryptoKit
 
 private let fm = FileManager.default
-private let claudeJSON = fm.homeDirectoryForCurrentUser.appendingPathComponent(".claude.json")
-private let backupDir = fm.homeDirectoryForCurrentUser
+private let defaultClaudeJSON = resolvedHome.appendingPathComponent(".claude.json")
+private let defaultBackupDir = resolvedHome
     .appendingPathComponent(".claude/backups")
 
 /// Compute SHA-256 hex digest of a file.
@@ -13,15 +13,17 @@ public func sha256Hex(_ url: URL) -> String? {
     return hash.map { String(format: "%02x", $0) }.joined()
 }
 
-private let hashFile = backupDir.appendingPathComponent("binary-sha256.txt")
-
 /// Create backups if they don't exist (idempotent).
-public func ensureBackup(_ binaryPath: URL) {
+public func ensureBackup(_ binaryPath: URL, backupDir: URL? = nil, soulPath: URL? = nil) {
+    let bkDir = backupDir ?? defaultBackupDir
+    let hashFile = bkDir.appendingPathComponent("binary-sha256.txt")
+    let soul = soulPath ?? defaultClaudeJSON
+
     let backup = binaryPath.deletingLastPathComponent()
         .appendingPathComponent("\(binaryPath.lastPathComponent).original-backup")
 
-    try? fm.createDirectory(at: backupDir, withIntermediateDirectories: true)
-    try? fm.setAttributes([.posixPermissions: 0o700], ofItemAtPath: backupDir.path)
+    try? fm.createDirectory(at: bkDir, withIntermediateDirectories: true)
+    try? fm.setAttributes([.posixPermissions: 0o700], ofItemAtPath: bkDir.path)
 
     if !fm.fileExists(atPath: backup.path) {
         do {
@@ -42,10 +44,10 @@ public func ensureBackup(_ binaryPath: URL) {
         print("  [=] Binary backup already exists at \(backup.path)")
     }
 
-    let soulBackup = backupDir.appendingPathComponent(".claude.json.pre-customize")
-    if !fm.fileExists(atPath: soulBackup.path) && fm.fileExists(atPath: claudeJSON.path) {
+    let soulBackup = bkDir.appendingPathComponent(".claude.json.pre-customize")
+    if !fm.fileExists(atPath: soulBackup.path) && fm.fileExists(atPath: soul.path) {
         do {
-            try fm.copyItem(at: claudeJSON, to: soulBackup)
+            try fm.copyItem(at: soul, to: soulBackup)
             try? fm.setAttributes([.posixPermissions: 0o600], ofItemAtPath: soulBackup.path)
             print("  [+] Soul backed up to \(soulBackup.path)")
         } catch {
@@ -81,7 +83,12 @@ public func verifyBinary(_ binaryPath: URL) -> Bool {
 }
 
 /// Restore binary and soul from backups.
-public func restoreBackup(_ binaryPath: URL) -> Bool {
+public func restoreBackup(_ binaryPath: URL, backupDir: URL? = nil, soulPath: URL? = nil,
+                           skipResign: Bool = false) -> Bool {
+    let bkDir = backupDir ?? defaultBackupDir
+    let hashFile = bkDir.appendingPathComponent("binary-sha256.txt")
+    let soul = soulPath ?? defaultClaudeJSON
+
     let backup = binaryPath.deletingLastPathComponent()
         .appendingPathComponent("\(binaryPath.lastPathComponent).original-backup")
 
@@ -115,20 +122,22 @@ public func restoreBackup(_ binaryPath: URL) -> Bool {
         return false
     }
 
-    let soulBackup = backupDir.appendingPathComponent(".claude.json.pre-customize")
+    let soulBackup = bkDir.appendingPathComponent(".claude.json.pre-customize")
     if fm.fileExists(atPath: soulBackup.path) {
         do {
             let soulData = try Data(contentsOf: soulBackup)
-            try soulData.write(to: claudeJSON, options: .atomic)
+            try soulData.write(to: soul, options: .atomic)
             print("  [+] Soul restored from \(soulBackup.path)")
         } catch {
             print("  [!] WARNING: Failed to restore soul: \(error)")
         }
     }
 
-    if !resignBinary(binaryPath) {
-        print("  [!] WARNING: Re-signing restored binary failed. Run manually:")
-        print("      codesign --force --sign - \(binaryPath.path)")
+    if !skipResign {
+        if !resignBinary(binaryPath) {
+            print("  [!] WARNING: Re-signing restored binary failed. Run manually:")
+            print("      codesign --force --sign - \(binaryPath.path)")
+        }
     }
     print("\n  Buddy restored to original! Restart Claude Code to see your OG buddy.")
     return true

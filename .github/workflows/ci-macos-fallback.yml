@@ -1,0 +1,81 @@
+name: macOS Fallback Tests (manual only)
+
+# Escape hatch for contributors without a macOS machine. This runs the full
+# test-all.sh suite on a macOS-14 runner and posts results as a Check Run.
+#
+# NOT triggered automatically -- must be invoked explicitly via:
+#   - workflow_dispatch (manual "Run workflow" button)
+#   - release tag push
+#
+# Why manual only? macOS runners are ~10x more expensive than Ubuntu. The
+# primary testing path is local (scripts/test-all.sh + upload-test-results.sh).
+
+on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Why are you running this? (visible in run history)'
+        required: true
+        default: 'Release verification'
+  push:
+    tags:
+      - 'v*'
+
+concurrency:
+  group: macos-fallback-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  checks: write
+
+jobs:
+  test:
+    name: Full test-all.sh on macos-14
+    runs-on: macos-14
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache SPM build
+        uses: actions/cache@v4
+        with:
+          path: scripts/BuddyPatcher/.build
+          key: spm-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('scripts/BuddyPatcher/Package.swift', 'scripts/BuddyPatcher/Sources/**/*.swift') }}
+          restore-keys: |
+            spm-${{ runner.os }}-${{ runner.arch }}-
+
+      - name: Build buddy-patcher (release)
+        run: swift build -c release --package-path scripts/BuddyPatcher
+
+      - name: Run test-all.sh
+        id: test
+        run: |
+          set +e
+          bash scripts/test-all.sh
+          echo "exit_code=$?" >> "$GITHUB_OUTPUT"
+
+      - name: Upload test-results artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ github.run_id }}
+          path: test-results/
+          retention-days: 14
+
+      - name: Upload JUnit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: junit-${{ github.run_id }}
+          path: test-results/junit.xml
+          retention-days: 14
+
+      - name: Fail if tests failed
+        if: steps.test.outputs.exit_code != '0'
+        env:
+          EXIT_CODE: ${{ steps.test.outputs.exit_code }}
+        run: |
+          echo "test-all.sh failed with exit $EXIT_CODE"
+          exit 1

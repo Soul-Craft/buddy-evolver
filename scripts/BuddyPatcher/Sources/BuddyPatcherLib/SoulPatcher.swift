@@ -1,7 +1,6 @@
 import Foundation
 
-private let defaultClaudeJSON = FileManager.default.homeDirectoryForCurrentUser
-    .appendingPathComponent(".claude.json")
+private let defaultClaudeJSON = resolvedHome.appendingPathComponent(".claude.json")
 
 /// Update the companion soul in ~/.claude.json (or a custom path for testing).
 @discardableResult

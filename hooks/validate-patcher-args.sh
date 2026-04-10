@@ -16,6 +16,7 @@ fi
 
 # ── Shell metacharacter check ──────────────────────────────────────
 # These characters could enable command injection if interpolated unsafely.
+# shellcheck disable=SC2034  # documents what check_metachar guards against
 DANGEROUS_CHARS=';|&$`'
 
 check_metachar() {
