@@ -7,15 +7,23 @@ This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-### Added
-- CONTRIBUTING.md, SECURITY.md, issue templates, PR template, Makefile, CHANGELOG,
-  and .gitattributes for open-source contributor readiness
+## [1.0.1] - 2026-04-10
 
-## [1.0.0] - 2026-04-09
+### Fixed
+- Stale `/buddy` references in `/buddy-evolve` and `/buddy-reset` post-restart
+  messages — users were told to "run /buddy" after restart, but that command was
+  removed in the #4 split. Now points at `/buddy-status`.
+- `/buddy reset` typo in `README.md` (should be `/buddy-reset`).
+- Inaccurate 1.0.0 changelog entry — the published 1.0.0 marketplace snapshot
+  predates the `/buddy` → `/buddy-evolve`+`/buddy-reset` split (#4) and all
+  subsequent development. The changelog previously listed those features under
+  1.0.0, but they never actually reached users. Reorganized to reflect reality.
+- Republish required: old 1.0.0 cache contained the legacy `/buddy` skill whose
+  `$ARGUMENTS` routing triggers a Claude Code parser error
+  ("Unhandled node type: string"). v1.0.1 delivers the already-fixed skills to
+  the marketplace so users can actually receive the #4 fix.
 
 ### Added
-- Initial plugin release as `buddy-customizer`, rebranded to Buddy Evolver (#2)
-- Marketplace listing (`marketplace.json`) and plugin install instructions (#3)
 - `/buddy-evolve` and `/buddy-reset` skills, split from original `/buddy` command (#4)
 - Auto-approval of buddy skill Bash commands to avoid mid-flow prompts (#5)
 - Post-patch binary verification and automatic restore on codesign failure (#6)
@@ -43,10 +51,29 @@ This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   CLAUDE.md and README.md in sync with the project structure (#18)
 - Developer-facing README sections: architecture, security model, development setup,
   testing reference, and expanded contributing guide (#20)
+- CONTRIBUTING.md, SECURITY.md, issue templates, PR template, Makefile, and
+  .gitattributes for open-source contributor readiness (#21)
+- 8-tier testing infrastructure (303 automated tests + 34 on-demand): smoke,
+  unit (178), security, integration, functional, ui, snapshots, docs. On-demand
+  compatibility and performance suites. Local HTML coverage report. (#23, #28)
 
 ### Changed
 - Removed species selection shortcut — species now chosen interactively in evolve flow
 - Simplified commands from `/buddy evolve` / `/buddy reset` to `/buddy-evolve` / `/buddy-reset`
+- Post-restart instructions in `/buddy-evolve` and `/buddy-reset` now point at
+  `/buddy-status` (was: the deleted `/buddy`), and drop the prescriptive warning
+  emoji per Claude Code skill message best practice.
 
-[Unreleased]: https://github.com/Soul-Craft/buddy-evolver/compare/v1.0.0...HEAD
+## [1.0.0] - 2026-04-01
+
+### Added
+- Initial plugin release as `buddy-customizer`, rebranded to Buddy Evolver (#2)
+- Marketplace listing (`marketplace.json`) and plugin install instructions (#3)
+- Original `/buddy` skill with `$ARGUMENTS` routing (`evolve` / `reset` subcommands).
+  **Known bug:** routing construct triggers Claude Code parser error
+  "Unhandled node type: string" — fixed in 1.0.1 by splitting into separate
+  `/buddy-evolve`, `/buddy-reset`, and `/buddy-status` skills.
+
+[Unreleased]: https://github.com/Soul-Craft/buddy-evolver/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/Soul-Craft/buddy-evolver/releases/tag/v1.0.1
 [1.0.0]: https://github.com/Soul-Craft/buddy-evolver/releases/tag/v1.0.0

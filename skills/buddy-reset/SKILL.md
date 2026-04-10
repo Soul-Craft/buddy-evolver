@@ -37,11 +37,9 @@ Ask: "This will restore your original buddy and revert all customizations. Conti
 
 Tell the user to restart Claude Code:
 ```
-Your original buddy has been restored!
-
-⚠️  Restart Claude Code to see your original buddy:
+Your original buddy has been restored. Restart Claude Code to load it:
    pkill -f claude && claude
-   Then run /buddy
 
-To re-evolve anytime: /buddy-evolve
+Once restarted, run /buddy-status to see your buddy.
+To re-evolve at any time, run /buddy-evolve.
 ```
