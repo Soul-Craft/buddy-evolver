@@ -13,13 +13,10 @@ Transform the user's Claude Code Buddy terminal pet through an interactive evolu
 Run pre-flight checks:
 
 ```bash
-BINARY=$(readlink ~/.local/bin/claude 2>/dev/null || echo "NOT_FOUND")
-echo "Binary: $BINARY"
-file "$BINARY" 2>/dev/null
 plutil -extract companion json -o - ~/.claude.json 2>/dev/null || echo "{}"
 ```
 
-Read the current buddy name and species from the output. Then display the discovery scene — the current buddy encountering a mysterious mushroom. Use the buddy's actual name and match the ASCII art to the current species:
+Read the current buddy name from the output. Then display the discovery scene — the current buddy encountering a mysterious mushroom. Use the buddy's actual name and match the ASCII art to the current species from metadata if available:
 
 **Species ASCII Art (use the one matching the current species):**
 
@@ -167,15 +164,16 @@ Evolving...
 Run the patching script:
 ```bash
 "${CLAUDE_PLUGIN_ROOT}/scripts/run-buddy-patcher.sh" \
-  --species [species] \
-  --rarity [rarity] \
-  --shiny \
-  --emoji "[emoji]" \
+  --meta-species [species] \
+  --meta-rarity [rarity] \
+  --meta-shiny \
+  --meta-emoji "[emoji]" \
+  --meta-stats '[{"debugging":[n],"patience":[n],"chaos":[n],"wisdom":[n],"snark":[n]}]' \
   --name "[name]" \
   --personality "[personality]"
 ```
 
-Note: always pass --shiny since all evolved buddies are shiny by default.
+Note: always pass --meta-shiny since all evolved buddies are shiny by default.
 
 ## Act 4 — The Reveal
 
@@ -204,11 +202,8 @@ After the script succeeds, display the evolved buddy:
 
 Then tell the user:
 ```
-Buddy evolved and binary re-signed. Restart Claude Code to load the new buddy:
-   exit
-   claude
-
-Once restarted, run /buddy-status to see your new buddy card.
+Name and personality are live in Claude Code — no restart needed.
+Run /buddy-status to see your new buddy card.
 To revert at any time, run /buddy-reset.
 ```
 
@@ -216,5 +211,4 @@ To revert at any time, run /buddy-reset.
 
 If the script fails:
 - Display the error output
-- Suggest running /buddy-reset to revert
-- Note that binary offsets are version-specific — if Claude Code just updated, run /test-patch to check compatibility
+- Suggest running /buddy-reset to revert any partial soul write
