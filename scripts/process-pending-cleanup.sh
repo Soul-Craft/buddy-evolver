@@ -55,6 +55,15 @@ for wt in worktrees:
         # Malformed entry — drop it
         continue
 
+    # If the directory is already gone, treat as success (drop from pending)
+    if not os.path.exists(wt_path):
+        subprocess.run(
+            ["git", "-C", main, "branch", "-D", branch],
+            capture_output=True, text=True
+        )
+        processed += 1
+        continue
+
     # Attempt worktree removal from the main repo (not from inside the worktree)
     rm = subprocess.run(
         ["git", "-C", main, "worktree", "remove", wt_path],
