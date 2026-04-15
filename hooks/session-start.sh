@@ -119,7 +119,7 @@ fi
 build_count=0
 MAIN_REPO_FOR_CACHE="$PROJECT_ROOT"
 if [[ -f "$PROJECT_ROOT/.git" ]]; then
-  MAIN_REPO_FOR_CACHE=$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')
+  MAIN_REPO_FOR_CACHE=$(git worktree list --porcelain 2>/dev/null | head -1 | sed 's/^worktree //')
   [[ -z "$MAIN_REPO_FOR_CACHE" ]] && MAIN_REPO_FOR_CACHE="$PROJECT_ROOT"
 fi
 WORKTREES_DIR="$MAIN_REPO_FOR_CACHE/.claude/worktrees"

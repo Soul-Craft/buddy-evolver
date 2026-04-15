@@ -27,8 +27,8 @@ This gives **automatic** cleanup with **guaranteed eventual completion**. The us
 ## Step 1: Detect main repo and current worktree
 
 ```bash
-# The main repo is always the first entry in `git worktree list`
-MAIN_REPO=$(git worktree list | head -1 | awk '{print $1}')
+# The main repo is always the first record; --porcelain is space-safe.
+MAIN_REPO=$(git worktree list --porcelain | head -1 | sed 's/^worktree //')
 CURRENT=$(pwd)
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
 ```
