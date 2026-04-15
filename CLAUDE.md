@@ -43,7 +43,7 @@ scripts/test-smoke.sh            Smoke tier: build sanity + CLI contract (<30s, 
 scripts/test-security.sh         Security validation test suite (~25 tests)
 scripts/test-ui.sh               Buddy card rendering against fixtures (23 tests)
 scripts/test-snapshots.sh        Golden file comparison for CLI output (6 tests)
-scripts/test-docs.sh             Documentation path + link + count consistency (16 tests)
+scripts/test-docs.sh             Documentation path + link + count consistency (18 tests)
 scripts/test-perf.sh             Performance benchmarks (7 benchmarks, on-demand)
 scripts/coverage.sh              Local HTML coverage report (test-results/coverage/)
 scripts/test-ui-renderer.py      Standalone Python renderer (reference for /buddy-status)
@@ -183,6 +183,8 @@ Four workflows in `.github/workflows/`:
 
 ## Automations
 
+**Session skills** (`/start-session` through `/session-exit`) are coordination-only — they run at your current main-session model and do not dispatch subagents. Only the agents below have a `model:` field that specifies an independent model for that agent's work.
+
 ### Hook: session-start context injection
 
 A `SessionStart` hook in `hooks/hooks.json` runs `hooks/session-start.sh` at the start of each Claude Code session. **Dynamic discovery**: parses frontmatter from every SKILL.md, agent markdown file, and hook definition to emit up-to-date lists with no hardcoded drift. Compares the current branch to `origin/main` via a cached `git fetch` (5-min TTL) and warns if >10 commits behind. Always exits 0 (never blocks session startup). Timeout: 10s.
@@ -209,6 +211,10 @@ Pre-commit wrap-up. Run BEFORE clicking the Desktop App's "Commit Changes" butto
 5. Sync docs via `/sync-docs`
 6. Comment review via the `comment-reviewer` Haiku agent
 7. Unified summary table
+
+### Phase 4: GitHub (commit / PR / merge)
+
+Handled via the Desktop App buttons — no Claude Code automation at this phase by design. Keeping humans at the publish gate.
 
 ### Skill: /session-deploy
 
