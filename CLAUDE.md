@@ -49,7 +49,7 @@ scripts/coverage.sh              Local HTML coverage report (test-results/covera
 scripts/test-ui-renderer.py      Standalone Python renderer (reference for /buddy-status)
 scripts/test-visual-smoke.sh     Manual pre-release visual check (interactive)
 scripts/test-all.sh              Master runner — all tiers, JSON/JUnit output
-scripts/upload-test-results.sh   Uploads results to GitHub as a Check Run
+scripts/upload-test-results.sh   Uploads results to GitHub as a commit status
 scripts/bump-version.sh          Atomic version bump across plugin.json + marketplace.json + README badge
 scripts/update-changelog.sh      Move [Unreleased] content to dated [X.Y.Z] section in CHANGELOG.md
 scripts/setup-labels.sh          One-time GitHub label setup for new/forked repos
@@ -170,16 +170,16 @@ Four workflows in `.github/workflows/`:
 
 ### Local → GitHub bridge
 
-`scripts/upload-test-results.sh` reads `test-results/results.json` and POSTs a GitHub Check Run via `gh api`. On permission failure (e.g. forks without `checks:write`), falls back to `gh pr comment`.
+`scripts/upload-test-results.sh` reads `test-results/results.json` and POSTs a commit status via the GitHub Statuses API (any repo-scoped PAT — no GitHub App required). Run this **after pushing but before opening the PR** so CI finds the status the moment the PR is created. Falls back to `gh pr comment` if the Statuses API fails.
 
 ### Contributor workflow
 
 1. Edit code on macOS.
 2. Run `scripts/test-all.sh` — all 6 tiers must pass.
-3. Run `scripts/upload-test-results.sh` — results appear as a Check Run on the current commit.
-4. Push the branch, open a PR.
-5. `ci-quality.yml` runs on Ubuntu; `ci-verify-local.yml` confirms the Check Run is present and green.
-6. Maintainer reviews and merges.
+3. Commit and push the branch (Desktop App or `git push`).
+4. Run `scripts/upload-test-results.sh` — posts a commit status on the pushed commit.
+5. Open a PR — `ci-verify-local.yml` finds the commit status and passes immediately.
+6. `ci-quality.yml` runs on Ubuntu; maintainer reviews and merges.
 
 ## Automations
 
@@ -206,11 +206,10 @@ Plan → Execute transition checkpoint. Run after a plan is approved (Plan Mode 
 Pre-commit wrap-up. Run BEFORE clicking the Desktop App's "Commit Changes" button. Unconditional linear pipeline:
 1. Token review with `--apply --force`
 2. Full test pipeline via `scripts/test-all.sh` — all 6 tiers
-3. Upload results to GitHub as a Check Run via `scripts/upload-test-results.sh`
-4. Security review via `security-reviewer` agent (conditional on Swift changes)
-5. Sync docs via `/sync-docs`
-6. Comment review via the `comment-reviewer` Haiku agent
-7. Unified summary table
+3. Security review via `security-reviewer` agent (conditional on Swift changes)
+4. Sync docs via `/sync-docs`
+5. Comment review via the `comment-reviewer` Haiku agent
+6. Unified summary table + reminder to run `scripts/upload-test-results.sh` after push
 
 ### Phase 4: GitHub (commit / PR / merge)
 
