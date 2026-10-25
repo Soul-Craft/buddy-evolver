@@ -163,7 +163,7 @@ Review diffs before committing.
 
 Four workflows in `.github/workflows/`:
 
-- **`ci-quality.yml`** (Ubuntu, runs on every push/PR) — shellcheck, JSON/YAML validation, skill frontmatter checks, repo hygiene, doc-sync validation.
+- **`ci-quality.yml`** (Ubuntu, runs on every push/PR) — shellcheck, JSON/YAML validation, skill frontmatter checks, repo hygiene, doc-sync validation. Its last job, `dependabot-merge`, squash-merges a Dependabot PR once those pass (Dependabot can't run local tests, so `ci-verify-local.yml` skips its PRs).
 - **`ci-verify-local.yml`** (Ubuntu, runs on every PR) — queries the GitHub Checks API for a `Local Tests (macOS)` Check Run on the head commit. If missing or failed, posts a sticky PR comment.
 - **`ci-macos-fallback.yml`** (macOS-14, manual only) — escape hatch for contributors without macOS. Runs the full `test-all.sh` suite.
 - **`release.yml`** — triggered on `v*` tag pushes.
