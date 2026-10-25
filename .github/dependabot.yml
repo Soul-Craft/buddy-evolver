@@ -3,15 +3,21 @@
 # The project has zero third-party runtime dependencies (Swift uses only
 # CryptoKit from the stdlib). The only thing we need to keep updated is
 # GitHub Actions versions in our workflows.
+#
+# Checked every weekday; all bumps arrive in one PR, which the
+# dependabot-merge job in ci-quality.yml merges once the quality checks
+# pass, majors included (owner, 2026-10-25).
 
 version: 2
 updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly"
-      day: "monday"
+      interval: "daily"
     open-pull-requests-limit: 5
+    groups:
+      actions:
+        patterns: ["*"]
     labels:
       - "dependencies"
       - "ci"

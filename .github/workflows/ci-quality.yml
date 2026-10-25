@@ -6,7 +6,8 @@ name: Quality Checks
 #
 # SECURITY: This workflow does NOT consume any untrusted GitHub event
 # data (issue titles, PR bodies, commit messages) in run: commands. All
-# `run:` steps operate only on repo file contents and hardcoded values.
+# `run:` steps operate only on repo file contents and hardcoded values;
+# dependabot-merge gets the PR URL through env:, never interpolated.
 
 on:
   push:
@@ -170,3 +171,13 @@ jobs:
           done
           [ "$missing" -eq 0 ] && echo "All artifacts referenced in CLAUDE.md"
           exit "$missing"
+
+  # Owner, 2026-10-25: every Dependabot update merges once all other jobs pass, majors too.
+  dependabot-merge:
+    needs: [shellcheck, json-yaml, hygiene, doc-sync]
+    if: github.event_name == 'pull_request' && github.event.pull_request.user.login == 'dependabot[bot]'
+    runs-on: ubuntu-24.04
+    permissions: {contents: write, pull-requests: write}
+    steps:
+      - run: gh pr merge --squash --delete-branch "$PR"
+        env: {GH_TOKEN: "${{ github.token }}", PR: "${{ github.event.pull_request.html_url }}"}
