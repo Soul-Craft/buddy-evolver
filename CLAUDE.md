@@ -1,3 +1,5 @@
+@AGENTS.md
+
 # Buddy Customizer
 
 Claude Code plugin that customizes the terminal Buddy companion by writing name and personality to Claude Code's companion system, and maintaining a Tamagotchi-style visual card with plugin-local cosmetic metadata.
