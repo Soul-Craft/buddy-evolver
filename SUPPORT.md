@@ -1,5 +1,7 @@
 # Support
 
+> Buddy Evolver is archived (2026-11-25). New issues and discussions are not read. See the note in [README.md](README.md).
+
 ```mermaid
 flowchart LR
   Q{What do you need?} -->|Something breaks| B[Issues tab:<br/>Bug report]

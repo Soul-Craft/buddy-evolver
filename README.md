@@ -6,9 +6,9 @@
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Plugin](https://img.shields.io/badge/Claude%20Code-Plugin-blueviolet)
 
-> **Archived on 2026-11-25.** A Mac check on 2026-11-25 found no native `/buddy` command in Claude Code 2.1.332 ([#60](https://github.com/Soul-Craft/buddy-evolver/issues/60)). This plugin writes a name and personality that only native `/buddy` reads, so the write may now do nothing visible. The repository is read-only and version 2.0.1 was never released.
+> **Archived on 2026-11-25 by the owner's decision.** A Mac check that day found no native `/buddy` command in Claude Code 2.1.332 ([#60](https://github.com/Soul-Craft/buddy-evolver/issues/60)). The check read one account on one version, so it did not show whether `/buddy` was removed, flagged or gated. This plugin writes a name and personality that only native `/buddy` reads, so the write may now do nothing visible. Version 2.0.1 was never released. The sections below describe the plugin as it worked before the archive.
 >
-> **To revive it:** when `/buddy` returns, run the compatibility check in [docs/SPEC.md](docs/SPEC.md) on a Mac (`/buddy`, then `/buddy-evolve`, then a fresh session). If name and personality show up, unarchive the repository, release 2.0.1 from the `[Unreleased]` section of `CHANGELOG.md`, and reopen the work queue in the spec.
+> **To revive it:** when `/buddy` returns, run the three-step compatibility check in [docs/SPEC.md](docs/SPEC.md#compatibility-check) on a Mac. If name and personality show up, unarchive the repository, release 2.0.1 from the `[Unreleased]` section of `CHANGELOG.md`, and reopen the work queue in the spec.
 
 > Your buddy found a psychedelic mushroom 🍄 What happens next is entirely up to you ✨
 

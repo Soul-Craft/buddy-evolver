@@ -1,5 +1,7 @@
 # Contributing to Buddy Evolver
 
+> Buddy Evolver is archived (2026-11-25), so contributions are closed. See the note in [README.md](README.md).
+
 Contributions are welcome — bug reports, feature requests, new species, new skills,
 and Swift patcher improvements. Please read this guide before opening a PR.
 
