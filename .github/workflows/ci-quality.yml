@@ -151,25 +151,25 @@ jobs:
     timeout-minutes: 2
     steps:
       - uses: actions/checkout@v7
-      - name: Check CLAUDE.md references each artifact
+      - name: Check docs/ARCHITECTURE.md references each artifact
         run: |
           set -euo pipefail
           missing=0
           for skill_dir in skills/*/; do
               skill=$(basename "$skill_dir")
-              if ! grep -q -F "$skill" CLAUDE.md; then
-                  echo "[FAIL] CLAUDE.md does not reference skill: $skill"
+              if ! grep -q -F "$skill" docs/ARCHITECTURE.md; then
+                  echo "[FAIL] docs/ARCHITECTURE.md does not reference skill: $skill"
                   missing=$((missing + 1))
               fi
           done
           for agent_file in agents/*.md; do
               agent=$(basename "$agent_file" .md)
-              if ! grep -q -F "$agent" CLAUDE.md; then
-                  echo "[FAIL] CLAUDE.md does not reference agent: $agent"
+              if ! grep -q -F "$agent" docs/ARCHITECTURE.md; then
+                  echo "[FAIL] docs/ARCHITECTURE.md does not reference agent: $agent"
                   missing=$((missing + 1))
               fi
           done
-          [ "$missing" -eq 0 ] && echo "All artifacts referenced in CLAUDE.md"
+          [ "$missing" -eq 0 ] && echo "All artifacts referenced in docs/ARCHITECTURE.md"
           exit "$missing"
 
   # Owner, 2026-10-25: every Dependabot update merges once all other jobs pass, majors too.

@@ -14,7 +14,7 @@ This skill is linear — no conditional branches. Every step runs every time. Th
 1. **Token review (--apply --force)** — apply token optimizations to skills/configs
 2. **Full test pipeline** — `scripts/test-all.sh` (~181 tests, 6 tiers)
 3. **Security review (conditional)** — `security-reviewer` agent if Swift files changed
-4. **Sync docs** — fix drift in CLAUDE.md and README.md
+4. **Sync docs** — fix drift in docs/ARCHITECTURE.md and README.md
 5. **Comment review** — Haiku agent audits inline comments in changed files
 6. **Summary report** — unified table with all results and next-step guidance
 
@@ -39,7 +39,7 @@ Bucket the changed paths into these categories for the final summary:
 - **hooks**: `hooks/**`
 - **config**: `.claude/settings.json`, `.claude-plugin/**`
 - **agents**: `agents/**`, `.claude-plugin/agents/**`
-- **docs**: `CLAUDE.md`, `README.md`, `docs/**`
+- **docs**: `CLAUDE.md`, `AGENTS.md`, `README.md`, `docs/**`
 - **scripts**: `scripts/**` (excluding BuddyPatcher)
 
 Capture a file list for the comment-review step later.
@@ -90,7 +90,7 @@ Capture counts: `N_pass`, `N_warn`, `N_fail`. Surface the summary for the unifie
 
 ## Step 4: Sync docs
 
-Invoke `/sync-docs` to detect and fix drift in CLAUDE.md and README.md. The skill uses the `docs-reviewer` agent internally.
+Invoke `/sync-docs` to detect and fix drift in docs/ARCHITECTURE.md and README.md. The skill uses the `docs-reviewer` agent internally.
 
 Capture:
 - `clean` (no drift detected) — report "✅ clean"

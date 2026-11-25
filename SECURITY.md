@@ -2,17 +2,19 @@
 
 ## Security Model
 
-Buddy Evolver modifies a signed Mach-O binary in-place. The project maintains
-defense-in-depth across three layers: Swift input validation, atomic writes with
-SHA-256 integrity verification, and plugin-level argument interception. See the
-[Security Model](CLAUDE.md#security) section of CLAUDE.md for the full
+Buddy Evolver writes a name and a personality to `~/.claude.json` and card metadata to
+`~/.claude/backups/`. Since version 2.0.0 it no longer touches the Claude Code binary.
+The project keeps defense-in-depth across three layers: Swift input validation, atomic
+writes with a one-time backup, and plugin-level argument interception. See the
+[Security](docs/ARCHITECTURE.md#security) section of docs/ARCHITECTURE.md for the full
 architecture.
 
 ## Supported Versions
 
 | Version | Supported |
 | ------- | --------- |
-| 1.0.0   | ✅ Yes     |
+| 2.0.x   | ✅ Yes     |
+| 1.x     | ❌ No, upgrade to 2.0.0 |
 
 ## Reporting a Vulnerability
 
@@ -29,7 +31,7 @@ Include:
 
 ## Security-Sensitive Files
 
-These files have outsized security impact — reports here are especially welcome:
+These files have outsized security impact, so reports here are especially welcome:
 
 | File | Role |
 |------|------|
@@ -44,10 +46,10 @@ These files have outsized security impact — reports here are especially welcom
 Contributors should maintain these invariants:
 
 - All user inputs are validated in `Validation.swift` **before** any write operation
-- All `Data.write()` calls use `.atomic` (backed by `rename(2)`) — no partial writes on crash
+- All `Data.write()` calls use `.atomic` (backed by `rename(2)`), so a crash leaves no partial write
 - Backup integrity is verified by SHA-256 hash before any restore
 - Codesign failure after patching triggers automatic restore and `exit(1)`
-- Zero third-party Swift dependencies — only Foundation and CryptoKit
+- Zero third-party Swift dependencies, only Foundation and CryptoKit
 
 ## No Bug Bounty
 

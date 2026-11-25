@@ -53,7 +53,7 @@ Before requesting review, run the full local suite on macOS:
 
 ### If modifying skills, hooks, or agents
 
-- [ ] `CLAUDE.md` updated (or `/sync-docs` ran)
+- [ ] `docs/ARCHITECTURE.md` updated (or `/sync-docs` ran)
 - [ ] `README.md` updated if change is user-facing
 
 ## Scope checklist

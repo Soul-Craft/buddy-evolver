@@ -1,0 +1,17 @@
+{
+ "comment": "Buddy Evolver's Quality, Speed and Consumption page: Git Crafter's starter tabs (templates/quality/README.md), built in CI only. Discussions, Projects, Pages and the rest read not measured where a token is missing, never 0. The pages tab is dropped: this repo serves no site but this page. Keys: Git Crafter quality/CONFIG.md.",
+ "tabs": [
+  "code",
+  "documentation",
+  "issues",
+  "pull-requests",
+  "discussions",
+  "actions",
+  "projects",
+  "security",
+  "dependabot",
+  "scanning",
+  "insights",
+  "settings"
+ ]
+}

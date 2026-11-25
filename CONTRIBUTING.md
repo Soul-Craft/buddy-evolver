@@ -56,7 +56,7 @@ Three main areas contributors touch:
 | Skills | `skills/` | Slash commands (`/buddy-evolve`, `/run-tests`, etc.) |
 | Hooks | `hooks/` | Session-start context, argument validation, pre-commit checks |
 
-See [CLAUDE.md](CLAUDE.md) for the full architecture reference, including the data
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full architecture reference, including the data
 flow, security model, and automation system.
 
 ---
@@ -149,7 +149,7 @@ Use the [Feature Request](.github/ISSUE_TEMPLATE/feature_request.yml) template.
 
 ### Adding a new patch type
 
-Follow the checklist in CLAUDE.md under "Modifying the Swift source":
+Follow the checklist in CLAUDE.md under "Modifying the Swift source" in docs/ARCHITECTURE.md:
 use `findAll()`, assert byte-length, add `[DRY RUN]` branch, call
 `saveMetadata()`, validate inputs, use `.atomic` writes.
 
