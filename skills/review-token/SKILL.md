@@ -15,7 +15,7 @@ Measure every file that gets loaded into Claude's context window. Run:
 ```bash
 cd "${CLAUDE_PLUGIN_ROOT}"
 echo "=== Always Loaded ==="
-for f in CLAUDE.md AGENTS.md docs/ARCHITECTURE.md .claude-plugin/plugin.json .claude-plugin/marketplace.json .claude/settings.json .claude/settings.local.json; do
+for f in CLAUDE.md AGENTS.md .claude-plugin/plugin.json .claude-plugin/marketplace.json .claude/settings.json .claude/settings.local.json; do
   if [ -f "$f" ]; then
     lines=$(wc -l < "$f" | tr -d ' ')
     chars=$(wc -c < "$f" | tr -d ' ')
