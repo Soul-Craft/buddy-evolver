@@ -255,7 +255,7 @@ A `PreToolUse` hook in `hooks/hooks.json` fires on Bash tool calls containing `g
 
 ### Hook: doc freshness check
 
-A `PreToolUse` hook in `hooks/hooks.json` fires on `git commit`. Checks if code files were staged without corresponding updates to `CLAUDE.md` or `README.md`.
+A `PreToolUse` hook in `hooks/hooks.json` fires on `git commit`. Checks if code files were staged without corresponding updates to `docs/ARCHITECTURE.md` or `README.md`.
 
 ### Skill: /clean-cache
 
@@ -283,7 +283,7 @@ Runs the full 6-tier test pipeline via `scripts/test-all.sh`, reads `test-result
 
 ### Skill: /sync-docs
 
-Compares actual project structure against CLAUDE.md and README.md using the `docs-reviewer` agent. Applies recommended edits to fix gaps, stale references, and incorrect paths.
+Compares actual project structure against docs/ARCHITECTURE.md and README.md using the `docs-reviewer` agent. Applies recommended edits to fix gaps, stale references, and incorrect paths.
 
 ### Agent: test-runner
 

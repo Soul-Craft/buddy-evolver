@@ -15,6 +15,7 @@ Find and measure every file that gets loaded into Claude's context:
 
 **Always loaded:**
 - `CLAUDE.md`
+- `AGENTS.md`
 - `.claude-plugin/plugin.json`
 - `.claude-plugin/marketplace.json`
 - `.claude/settings.json`
@@ -38,15 +39,15 @@ For each check (A1 through E1):
    - **A1:** Multi-line ASCII art blocks in buddy-evolve/SKILL.md (lines with art characters like `}~`, `(`, `/\`)
    - **A2:** Box-drawing templates in buddy-status/SKILL.md (lines with `║`, `╔`, `╚`)
    - **A3:** Sparkle-decorated art in buddy-evolve/SKILL.md (lines with `✨` near art)
-   - **A4:** "Modifying the Swift source" section heading in CLAUDE.md
+   - **A4:** "Modifying the Swift source" section heading in docs/ARCHITECTURE.md
    - **B1:** Inline species list of 18+ species in buddy-evolve/SKILL.md
    - **B2:** Rarity tier names with descriptions in multiple files
-   - **C1:** Parenthetical descriptions in architecture tree in CLAUDE.md
-   - **C2:** Multi-sentence patch type explanations in CLAUDE.md
+   - **C1:** Parenthetical descriptions in architecture tree in docs/ARCHITECTURE.md
+   - **C2:** Multi-sentence patch type explanations in docs/ARCHITECTURE.md
    - **C3:** Verbose instruction prefixes like "Use AskUserQuestion:" in buddy-evolve/SKILL.md
    - **D1:** Long warning string in settings.json hook
    - **D2:** grep for `patch-buddy.py` in settings.json (should be `BuddyPatcher`)
-   - **E1:** File tree with inline descriptions in CLAUDE.md Swift layout section
+   - **E1:** File tree with inline descriptions in docs/ARCHITECTURE.md Swift layout section
 3. Mark as OPPORTUNITY (pattern found, can optimize) or PASS (already optimized/not found)
 4. For opportunities, calculate estimated tokens from the matched content: count characters in the matched region, divide by 4
 

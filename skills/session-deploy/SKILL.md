@@ -261,17 +261,15 @@ If `--dry-run`, print the Unreleased content that would be moved.
 
 ### Step 11: Tag and push
 
-**This step pushes to the public repo and triggers the marketplace release.** Require explicit user confirmation before executing:
+**This step pushes to the public repo and triggers the marketplace release.** The owner delegated releases to Claude on 2026-11-25, so no owner click is needed. Before executing, check that the head commit has a fresh review verdict (`Review: MERGE at <sha>`) and a green `Local Tests (macOS)` status. If either is missing, stop and report which. State the plan first:
 
-> "Ready to tag and push `v$NEW`? This will:
+> "Tagging and pushing `v$NEW`. This will:
 >  - Commit the version bump + CHANGELOG update
 >  - Create an annotated tag `v$NEW`
 >  - Push to origin/main, triggering `release.yml` on GitHub Actions
->  - Publish the new version to the Claude Marketplace
->
->  Type 'yes' to proceed."
+>  - Publish the new version to the Claude Marketplace"
 
-Only on explicit confirmation, run:
+Only when the review and the macOS status are both green, run:
 
 ```bash
 git -C "$MAIN_REPO" add \
@@ -336,7 +334,7 @@ If the PR merge check says the branch is not yet merged, the whole skill should 
 - **The two-phase cleanup design** is deliberate: SessionEnd hook attempts immediate removal, SessionStart hook retries on the next session. Both call `scripts/process-pending-cleanup.sh` to avoid duplicating logic.
 - **Do not add a `--force` remove flag.** Dirty worktrees should always be kept — losing uncommitted work is worse than leaving a worktree behind.
 - **Branch deletion uses `-d` (safe) not `-D` (force)** to catch cases where the merged-into-main check got fooled by a squash merge or rebase. If `-d` refuses, the cleanup log will show it and the user can intervene.
-- **Release steps (9–12) require explicit user confirmation** at Step 11 before the push. Tag pushes trigger marketplace publish and are visible to downstream users; never push a tag without a clear yes.
+- **Release steps (9–12) require a fresh review and green macOS tests** at Step 11 before the push. Tag pushes trigger marketplace publish and are visible to downstream users; never push a tag without both. The owner's own click is not needed (2026-11-25).
 - **Release version validation lives in `release.yml`.** That workflow compares the tag name against `plugin.json#version` and fails fast if they disagree. `scripts/bump-version.sh` keeps them in sync; don't bypass it.
 - **CHANGELOG entry is required for release.** `scripts/update-changelog.sh` exits 1 if `[Unreleased]` is empty. This is intentional — a release with no changelog entry is a bug.
 - **If `release.yml` fails mid-publish**, the tag is already pushed. To retry: delete the bad tag (`git tag -d v$N && git push origin :refs/tags/v$N`), fix the issue, re-run `/session-deploy --release`.
