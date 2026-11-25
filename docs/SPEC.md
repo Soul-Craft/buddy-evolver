@@ -1,6 +1,8 @@
 # Spec: keep Buddy Evolver working beside Claude Code's `/buddy`
 
-The owner chose this direction on 2026-11-25: keep the plugin working, and do not grow it. Issue [#52](https://github.com/Soul-Craft/buddy-evolver/issues/52) tracks this document.
+**Status: archived on 2026-11-25.** The compatibility check ([#53](https://github.com/Soul-Craft/buddy-evolver/issues/53)) failed at step 1 on Claude Code 2.1.332. A headless `/buddy` on one account answered that the command is not installed, and the binary holds no `/buddy` text ([#60](https://github.com/Soul-Craft/buddy-evolver/issues/60)). The check did not show whether `/buddy` was removed, flagged or gated. The owner chose on 2026-11-25 to archive the repository, not delete it. Release 2.0.1 is cancelled. The rest of this page is the plan as it stood, kept so the work can resume if `/buddy` returns.
+
+Superseded by the archive above. The owner first chose this direction on 2026-11-25: keep the plugin working, and do not grow it. Issue [#52](https://github.com/Soul-Craft/buddy-evolver/issues/52) tracks this document.
 
 ```mermaid
 flowchart LR
@@ -27,7 +29,7 @@ flowchart LR
 | --- | --- |
 | Name and personality still reach Claude Code's own companion | New species, rarity tiers or stats |
 | The plugin never registers a skill named `buddy`, so it never shadows the native command | Any binary patching. Version 2.0.0 retired it |
-| The unreleased fixes ship as version 2.0.1 | Support for platforms other than macOS |
+| The unreleased fixes ship as version 2.0.1 (cancelled with the archive) | Support for platforms other than macOS |
 | Issue [#10](https://github.com/Soul-Craft/buddy-evolver/issues/10) is closed with a pointer, since it predates 2.0.0 | A second companion feature |
 
 ## Checks
@@ -36,9 +38,19 @@ flowchart LR
 | --- | --- | --- | --- |
 | `/buddy` guard: no skill named `buddy` | `scripts/test-docs.sh`, group 10 | in CI on a Mac and on Linux | built in |
 | Docs and architecture agree | `scripts/test-docs.sh` and `doc-sync` in `ci-quality.yml` | passes on Linux | built in |
-| Name and personality reach the native companion | a Mac session with Claude Code | not run yet | [#53](https://github.com/Soul-Craft/buddy-evolver/issues/53) |
+| Name and personality reach the native companion | a Mac session with Claude Code | fails at step 1 on Claude Code 2.1.332 (2026-11-25), on one account. `/buddy` is not installed there | [#53](https://github.com/Soul-Craft/buddy-evolver/issues/53) |
 | Six test tiers | `bash scripts/test-all.sh` on a Mac | pending a Mac session | each pull request |
 | CodeQL default setup | repository settings, from a Mac session | not configured | [#51](https://github.com/Soul-Craft/buddy-evolver/issues/51) |
+
+## Compatibility check
+
+Run this on a Mac with Claude Code once `/buddy` returns. Record the result under Checks.
+
+| Step | Action | Pass when |
+| --- | --- | --- |
+| 1 | Run `/buddy`, then read `~/.claude.json#companion` | `/buddy` runs and a `companion` entry exists |
+| 2 | Run `/buddy-evolve`, then start a fresh session | the native companion shows the new name and personality |
+| 3 | Run `/buddy-reset` | the original companion returns |
 
 ## Work queue
 
@@ -46,13 +58,15 @@ flowchart LR
 | --- | --- | --- |
 | Agent files, spec, Quality and Process pages | [#52](https://github.com/Soul-Craft/buddy-evolver/issues/52) | cloud |
 | Compatibility check with native `/buddy` | [#53](https://github.com/Soul-Craft/buddy-evolver/issues/53) | Mac |
-| Release 2.0.1 | [#54](https://github.com/Soul-Craft/buddy-evolver/issues/54) | Mac, after #53 |
+| Release 2.0.1 (cancelled) | [#54](https://github.com/Soul-Craft/buddy-evolver/issues/54) | Mac, after #53 |
 | Pages on | [#55](https://github.com/Soul-Craft/buddy-evolver/issues/55) | Mac |
 | Ruleset on `main` | [#56](https://github.com/Soul-Craft/buddy-evolver/issues/56) | Mac |
 | Pin Actions to SHAs | [#57](https://github.com/Soul-Craft/buddy-evolver/issues/57) | cloud |
 | Project board and cards | [#58](https://github.com/Soul-Craft/buddy-evolver/issues/58) | Mac |
 
 ## Release 2.0.1
+
+Cancelled on 2026-11-25 with the archive. No tag was cut and `bump-version` was not run. The table below is the plan to use on revival.
 
 | Item | Detail |
 | --- | --- |

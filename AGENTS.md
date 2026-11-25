@@ -4,7 +4,7 @@ Instructions for every coding agent in this repo. OpenCode reads this file, and 
 
 | Topic | Rule |
 | --- | --- |
-| What this repo is | A Claude Code plugin that writes a Buddy's name and personality to `~/.claude.json#companion` and draws a card from plugin-local metadata. It runs beside Claude Code's own `/buddy`. macOS only. Spec: [docs/SPEC.md](docs/SPEC.md). Architecture: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) |
+| What this repo is | Archived on 2026-11-25 by the owner's decision. A Mac check found no native `/buddy` in Claude Code 2.1.332 on one account ([#60](https://github.com/Soul-Craft/buddy-evolver/issues/60)). Do not start new work, release or merge feature changes. It was a Claude Code plugin that writes a Buddy's name and personality to `~/.claude.json#companion` and draws a card from plugin-local metadata. It ran beside Claude Code's own `/buddy`. macOS only. Spec: [docs/SPEC.md](docs/SPEC.md). Architecture: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) |
 | Build and test | Anywhere: `bash scripts/lint.sh` and `bash scripts/test-docs.sh`. Only on a Mac: `bash scripts/test-all.sh` (six tiers), then `bash scripts/upload-test-results.sh` after the push. A cloud session cannot run Swift, so it notes the macOS run as pending in the pull request |
 | Docs | A new skill, agent or hook is named in `docs/ARCHITECTURE.md`. The `doc-sync` check in `ci-quality.yml` fails if it is not |
 | Shipping | Branch `claude/…`, commit, push the branch and open a draft pull request from `.github/PULL_REQUEST_TEMPLATE.md`. Never push to `main` |
