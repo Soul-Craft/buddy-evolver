@@ -1,5 +1,7 @@
 # Spec: keep Buddy Evolver working beside Claude Code's `/buddy`
 
+**Status: archived on 2026-11-25.** The compatibility check ([#53](https://github.com/Soul-Craft/buddy-evolver/issues/53)) failed at step 1 on Claude Code 2.1.332, which has no native `/buddy` command ([#60](https://github.com/Soul-Craft/buddy-evolver/issues/60)). The owner chose to archive the repository, not delete it. Release 2.0.1 is cancelled. The rest of this page is the plan as it stood, kept so the work can resume if `/buddy` returns.
+
 The owner chose this direction on 2026-11-25: keep the plugin working, and do not grow it. Issue [#52](https://github.com/Soul-Craft/buddy-evolver/issues/52) tracks this document.
 
 ```mermaid
@@ -36,7 +38,7 @@ flowchart LR
 | --- | --- | --- | --- |
 | `/buddy` guard: no skill named `buddy` | `scripts/test-docs.sh`, group 10 | in CI on a Mac and on Linux | built in |
 | Docs and architecture agree | `scripts/test-docs.sh` and `doc-sync` in `ci-quality.yml` | passes on Linux | built in |
-| Name and personality reach the native companion | a Mac session with Claude Code | not run yet | [#53](https://github.com/Soul-Craft/buddy-evolver/issues/53) |
+| Name and personality reach the native companion | a Mac session with Claude Code | fails at step 1 on Claude Code 2.1.332 (2026-11-25). No native `/buddy` command. No `companion` entry on the tested account | [#53](https://github.com/Soul-Craft/buddy-evolver/issues/53) |
 | Six test tiers | `bash scripts/test-all.sh` on a Mac | pending a Mac session | each pull request |
 | CodeQL default setup | repository settings, from a Mac session | not configured | [#51](https://github.com/Soul-Craft/buddy-evolver/issues/51) |
 
@@ -46,13 +48,15 @@ flowchart LR
 | --- | --- | --- |
 | Agent files, spec, Quality and Process pages | [#52](https://github.com/Soul-Craft/buddy-evolver/issues/52) | cloud |
 | Compatibility check with native `/buddy` | [#53](https://github.com/Soul-Craft/buddy-evolver/issues/53) | Mac |
-| Release 2.0.1 | [#54](https://github.com/Soul-Craft/buddy-evolver/issues/54) | Mac, after #53 |
+| Release 2.0.1 (cancelled) | [#54](https://github.com/Soul-Craft/buddy-evolver/issues/54) | Mac, after #53 |
 | Pages on | [#55](https://github.com/Soul-Craft/buddy-evolver/issues/55) | Mac |
 | Ruleset on `main` | [#56](https://github.com/Soul-Craft/buddy-evolver/issues/56) | Mac |
 | Pin Actions to SHAs | [#57](https://github.com/Soul-Craft/buddy-evolver/issues/57) | cloud |
 | Project board and cards | [#58](https://github.com/Soul-Craft/buddy-evolver/issues/58) | Mac |
 
 ## Release 2.0.1
+
+Cancelled on 2026-11-25 with the archive. No tag was cut and `bump-version` was not run. The table below is the plan to use on revival.
 
 | Item | Detail |
 | --- | --- |
