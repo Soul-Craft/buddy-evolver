@@ -1,0 +1,53 @@
+[
+ {
+  "id": "docs.dead_paths",
+  "params": {
+   "areas": [
+    {
+     "doc": "CHANGELOG.md",
+     "area": []
+    },
+    {
+     "doc": "CODE_OF_CONDUCT.md",
+     "area": []
+    },
+    {
+     "doc": "SECURITY.md",
+     "area": []
+    },
+    {
+     "doc": ".github/**",
+     "area": []
+    },
+    {
+     "doc": "skills/**",
+     "area": []
+    },
+    {
+     "doc": "agents/**",
+     "area": []
+    },
+    {
+     "doc": ".claude-plugin/**",
+     "area": []
+    },
+    {
+     "doc": "scripts/**",
+     "area": [
+      "scripts/"
+     ]
+    },
+    {
+     "doc": "**",
+     "area": [
+      "skills/",
+      "agents/",
+      "hooks/",
+      "scripts/",
+      ".claude-plugin/"
+     ]
+    }
+   ]
+  }
+ }
+]

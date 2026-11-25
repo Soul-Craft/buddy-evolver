@@ -1,6 +1,6 @@
 # 🍄 Buddy Evolver | Claude Code Plugin
 
-[![CI](https://github.com/Soul-Craft/buddy-evolver/actions/workflows/ci.yml/badge.svg)](https://github.com/Soul-Craft/buddy-evolver/actions/workflows/ci.yml)
+[![CI](https://github.com/Soul-Craft/buddy-evolver/actions/workflows/ci-quality.yml/badge.svg)](https://github.com/Soul-Craft/buddy-evolver/actions/workflows/ci-quality.yml)
 ![Version](https://img.shields.io/badge/version-2.0.0-blue)
 ![Platform](https://img.shields.io/badge/platform-macOS-lightgrey)
 ![License](https://img.shields.io/badge/license-MIT-green)
@@ -14,7 +14,7 @@ Pick the species. Choose the rarity. Name it. Define its personality. Max out it
 
 **Name and personality reach Claude Code directly** — your buddy's name appears in the sidebar, its personality shapes how it introduces itself. Species, rarity, emoji, and stats are plugin-local card flair displayed by `/buddy-status`.
 
-### 🎬 Here's what it looks like
+## 🎬 Here's what it looks like
 
 **You choose everything:**
 
@@ -356,7 +356,7 @@ Then remove the plugin (inside Claude Code):
 
 ---
 
-# 🛠️ For Developers
+## 🛠️ For Developers
 
 Everything below is for contributors and developers working on the plugin itself.
 
@@ -450,7 +450,7 @@ The plugin ships 14 skills, 6 agents, and 5 hooks:
 | `/run-all-tests` | Run the full 6-tier pipeline via `test-all.sh` with per-tier summary table |
 | `/clean-cache` | Interactive cache management with dry-run preview |
 | `/review-token` | 5-phase context footprint audit with optimization recommendations |
-| `/sync-docs` | Compare project structure against CLAUDE.md and README.md, fix gaps |
+| `/sync-docs` | Compare project structure against docs/ARCHITECTURE.md and README.md, fix gaps |
 | `/session-start` | Refresh dev context (delegates to SessionStart hook — no hardcoded list to drift) |
 | `/session-review` | Pre-commit wrap-up: token review → test-all → upload Check Run → sync docs → comment audit |
 | `/session-deploy` | Post-merge: sync local main, verify smoke, clean other worktrees, stage self-cleanup for `/exit` |
@@ -482,11 +482,11 @@ The plugin ships 14 skills, 6 agents, and 5 hooks:
 | Worktree cleanup | `SessionEnd` | Attempts to remove staged worktree from `/session-deploy` on exit |
 | Argument validation | `PreToolUse` (Bash) | Validates patcher args for shell metacharacters, injection, length limits |
 | Test reminder | `PreToolUse` (Bash) | Reminds to run `swift test` before `git commit` on Swift changes |
-| Doc freshness | `PreToolUse` (Bash) | Warns if code changed but CLAUDE.md/README.md weren't updated |
+| Doc freshness | `PreToolUse` (Bash) | Warns if code changed but docs/ARCHITECTURE.md/README.md weren't updated |
 
 </details>
 
-> For the full architecture reference, see [CLAUDE.md](CLAUDE.md).
+> For the full architecture reference, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ---
 

@@ -24,8 +24,8 @@ Move static visual content from SKILL.md files to reference files. Reference fil
 - **Action:** Move to `skills/buddy-evolve/references/species-ascii-art.md` as "sparkle variants". Replace with a read instruction.
 - **Savings:** ~100 tokens
 
-### A4: Swift development guide in CLAUDE.md
-- **Target:** `CLAUDE.md`
+### A4: Swift development guide in docs/ARCHITECTURE.md
+- **Target:** `docs/ARCHITECTURE.md`
 - **Pattern:** Sections titled "Modifying the Swift source" or "Swift source layout"
 - **Action:** Move to `references/swift-development-guide.md`. Replace with: "For Swift modification guidelines, see `references/swift-development-guide.md`."
 - **Savings:** ~340 tokens
@@ -52,13 +52,13 @@ Consolidate repeated data into a single canonical source.
 Reduce verbose explanatory text without losing functional information.
 
 ### C1: Architecture tree descriptions
-- **Target:** `CLAUDE.md`
+- **Target:** `docs/ARCHITECTURE.md`
 - **Pattern:** Parenthetical descriptions in the architecture tree (e.g., "Plugin manifest (name, version, metadata)")
 - **Action:** Remove parentheticals — filenames are self-documenting.
 - **Savings:** ~60 tokens
 
 ### C2: Patching explanation prose
-- **Target:** `CLAUDE.md`
+- **Target:** `docs/ARCHITECTURE.md`
 - **Pattern:** Multi-sentence explanations of each patch type
 - **Action:** Compress to a compact table: `| Patch | Target | Method |`
 - **Savings:** ~80 tokens
@@ -86,7 +86,7 @@ Reduce verbose explanatory text without losing functional information.
 ## Category E: Always-Loaded Minimization
 
 ### E1: Swift source layout verbosity
-- **Target:** `CLAUDE.md`
+- **Target:** `docs/ARCHITECTURE.md`
 - **Pattern:** File tree with inline descriptions for each Swift file
 - **Action:** List filenames only, remove descriptions (function names are self-documenting).
 - **Savings:** ~80 tokens

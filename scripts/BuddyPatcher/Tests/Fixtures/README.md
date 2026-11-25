@@ -48,5 +48,5 @@ inspect what changed.
 
 ## No committed Mach-O binaries
 
-Test binaries are generated at runtime by `scripts/build-test-binary.sh`
-and are never committed. Only JSON and text files live here.
+Binary fixtures are not used since version 2.0.0, which retired the binary-patching
+layer. Only JSON and text files live here, and nothing binary is committed.

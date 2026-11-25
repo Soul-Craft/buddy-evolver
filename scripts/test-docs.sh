@@ -2,8 +2,8 @@
 # Documentation consistency tests.
 #
 # Fills gaps that doc-sync (ci-quality.yml) doesn't cover:
-#   1. Architecture tree paths in CLAUDE.md exist on disk
-#   2. Swift source layout paths in CLAUDE.md exist on disk
+#   1. Architecture tree paths in docs/ARCHITECTURE.md exist on disk
+#   2. Swift source layout paths in docs/ARCHITECTURE.md exist on disk
 #   3. Markdown file-path links in key docs resolve
 #   4. Anti-drift: no stale test counts in live docs
 #   5. Makefile targets referenced in docs exist in Makefile
@@ -43,9 +43,9 @@ echo "  Docs Test Suite"
 echo "  ═══════════════"
 echo
 
-# ── Group 1: Architecture tree paths in CLAUDE.md ─────────────────
+# ── Group 1: Architecture tree paths in docs/ARCHITECTURE.md ─────────────────
 
-echo "  --- Group 1: CLAUDE.md architecture tree ---"
+echo "  --- Group 1: docs/ARCHITECTURE.md architecture tree ---"
 echo
 
 missing_arch=0
@@ -60,7 +60,7 @@ while IFS= read -r path; do
 done < <(python3 - <<'PY'
 import re, pathlib
 
-content = pathlib.Path("CLAUDE.md").read_text()
+content = pathlib.Path("docs/ARCHITECTURE.md").read_text()
 match = re.search(r'## Architecture\n\n```\n(.+?)```', content, re.DOTALL)
 if match:
     for line in match.group(1).strip().splitlines():
@@ -71,18 +71,18 @@ PY
 )
 
 if [ "$missing_arch" -eq 0 ]; then
-    assert_pass "All CLAUDE.md architecture tree paths exist on disk" "0"
+    assert_pass "All docs/ARCHITECTURE.md architecture tree paths exist on disk" "0"
 else
-    echo "  [FAIL] CLAUDE.md architecture tree: $missing_arch path(s) missing:"
+    echo "  [FAIL] docs/ARCHITECTURE.md architecture tree: $missing_arch path(s) missing:"
     printf '%b\n' "$missing_list"
     FAILED=$((FAILED + 1))
 fi
 
 echo
 
-# ── Group 2: Swift source layout paths in CLAUDE.md ───────────────
+# ── Group 2: Swift source layout paths in docs/ARCHITECTURE.md ───────────────
 
-echo "  --- Group 2: CLAUDE.md Swift source layout ---"
+echo "  --- Group 2: docs/ARCHITECTURE.md Swift source layout ---"
 echo
 
 missing_swift=0
@@ -92,7 +92,7 @@ missing_swift_list=""
 swift_filenames=$(python3 - <<'PY'
 import re, pathlib
 
-content = pathlib.Path("CLAUDE.md").read_text()
+content = pathlib.Path("docs/ARCHITECTURE.md").read_text()
 match = re.search(r'### Swift source layout\n\n```\n(.+?)```', content, re.DOTALL)
 if match:
     for line in match.group(1).strip().splitlines():
@@ -113,9 +113,9 @@ while IFS= read -r fname; do
 done <<< "$swift_filenames"
 
 if [ "$missing_swift" -eq 0 ]; then
-    assert_pass "All CLAUDE.md Swift source layout paths exist on disk" "0"
+    assert_pass "All docs/ARCHITECTURE.md Swift source layout paths exist on disk" "0"
 else
-    echo "  [FAIL] CLAUDE.md Swift source layout: $missing_swift path(s) missing:"
+    echo "  [FAIL] docs/ARCHITECTURE.md Swift source layout: $missing_swift path(s) missing:"
     printf '%b\n' "$missing_swift_list"
     FAILED=$((FAILED + 1))
 fi
@@ -136,6 +136,8 @@ check_md_links() {
         clean="${link_target#./}"
         clean="${clean%%#*}"
         [ -z "$clean" ] && continue
+        # Links resolve from the folder that holds the doc, as GitHub renders them.
+        clean="$(dirname "$doc_file")/$clean"
         if [ ! -e "$clean" ]; then
             missing_links="$missing_links\n    $link_target"
             missing=$((missing + 1))
@@ -157,6 +159,9 @@ check_md_links() {
 
 check_md_links "README.md"
 check_md_links "CLAUDE.md"
+check_md_links "AGENTS.md"
+check_md_links "docs/ARCHITECTURE.md"
+check_md_links "docs/SPEC.md"
 check_md_links "CONTRIBUTING.md"
 check_md_links ".github/PULL_REQUEST_TEMPLATE.md"
 
@@ -205,7 +210,7 @@ defined_targets=$(grep -oE '^[a-zA-Z_-]+:' Makefile | tr -d ':' | sort)
 
 # Extract 'make <target>' from docs; filter English false positives.
 # Using a variable + while-heredoc avoids nested-pipe case syntax issues.
-doc_targets_raw=$(grep -hoE 'make [a-z][a-z-]+' README.md CLAUDE.md CONTRIBUTING.md 2>/dev/null \
+doc_targets_raw=$(grep -hoE 'make [a-z][a-z-]+' README.md CLAUDE.md AGENTS.md docs/ARCHITECTURE.md CONTRIBUTING.md 2>/dev/null \
                   | awk '{print $2}' | sort -u)
 
 missing_targets=0

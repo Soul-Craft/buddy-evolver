@@ -1,0 +1,55 @@
+{
+ "comment": "Buddy Evolver's Process page config, and its maps file. From Git Crafter templates/process/config.json. The deploy map is dropped with the Pages tab: nothing here deploys. Keys: Git Crafter actions/pages/action.yml; maps: pages/maps/README.md.",
+ "repos": [
+  "buddy-evolver"
+ ],
+ "docs": {
+  "maps": "quality/process/config.json"
+ },
+ "repo_url": "https://github.com/Soul-Craft/buddy-evolver/blob/main",
+ "maps": [
+  {
+   "use": "delivery"
+  },
+  {
+   "use": "adopt"
+  },
+  {
+   "use": "measure"
+  },
+  {
+   "use": "code"
+  },
+  {
+   "use": "triage"
+  },
+  {
+   "use": "secure"
+  }
+ ],
+ "data": "quality/process/data/org.json",
+ "history": null,
+ "out": "quality/dist",
+ "pages": {
+  "process": "process.html"
+ },
+ "tabs": [
+  "build",
+  "ci",
+  "testing"
+ ],
+ "heading": "Buddy Evolver",
+ "collector": "Git Crafter actions/pages",
+ "nav": [
+  {
+   "href": "index.html",
+   "label": "Quality, Speed and Consumption",
+   "icon": "speed"
+  },
+  {
+   "page": "process",
+   "label": "Process",
+   "icon": "plan"
+  }
+ ]
+}

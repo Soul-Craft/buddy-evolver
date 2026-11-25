@@ -19,3 +19,10 @@ scripts/BuddyPatcher/.testrun/
 credentials*
 *.pem
 *.key
+
+# Quality page output: built in CI, never committed
+quality/data/
+quality/dist/
+quality/history/
+quality/public/
+quality/process/data/

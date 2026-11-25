@@ -5,7 +5,7 @@ description: This skill should be used when the user asks to "sync docs", "updat
 
 # Sync Docs — Keep Documentation in Sync with Code
 
-Compare the actual project structure against CLAUDE.md and README.md, identify gaps and stale references, and apply fixes.
+Compare the actual project structure against docs/ARCHITECTURE.md and README.md, identify gaps and stale references, and apply fixes.
 
 ## Steps
 
@@ -36,7 +36,7 @@ If drift is detected, show the user a summary table:
 | Outdated desc.    | N     | [list items]               |
 ```
 
-### 3. Apply fixes to CLAUDE.md
+### 3. Apply fixes to docs/ARCHITECTURE.md
 
 For each gap found, apply the appropriate fix:
 
@@ -67,11 +67,11 @@ For each gap found, apply the appropriate fix:
 
 ### 4. Ask user to confirm descriptions
 
-For any NEW skill or agent that needs a description added to CLAUDE.md, show the user the proposed one-line description and ask if they'd like to adjust it before applying.
+For any NEW skill or agent that needs a description added to docs/ARCHITECTURE.md, show the user the proposed one-line description and ask if they'd like to adjust it before applying.
 
 ### 5. Show summary
 
 After applying fixes, show:
-- Number of edits applied to CLAUDE.md
+- Number of edits applied to docs/ARCHITECTURE.md
 - Number of edits applied to README.md
 - Suggest committing with a message like: "Update documentation to match current codebase"

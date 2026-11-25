@@ -3,7 +3,7 @@
 # staged without corresponding documentation updates.
 #
 # Reads JSON tool input from stdin. If the command contains "git commit",
-# checks staged files for code changes without CLAUDE.md/README.md updates.
+# checks staged files for code changes without docs/ARCHITECTURE.md or README.md updates.
 # Outputs a systemMessage reminder if drift is detected.
 #
 # Always exits 0 (advisory, never blocks commits).
@@ -40,12 +40,12 @@ fi
 
 # Check if docs were also staged
 docs_changed=false
-if echo "$staged" | grep -qE '^(CLAUDE\.md|README\.md)$'; then
+if echo "$staged" | grep -qE '^(CLAUDE\.md|AGENTS\.md|README\.md|docs/ARCHITECTURE\.md)$'; then
   docs_changed=true
 fi
 
 if [ "$docs_changed" = false ]; then
-  echo '{"systemMessage": "Code files (skills, agents, hooks, or scripts) were modified but CLAUDE.md/README.md were not updated. Consider running /sync-docs before committing to keep documentation in sync."}'
+  echo '{"systemMessage": "Code files (skills, agents, hooks, or scripts) were modified but docs/ARCHITECTURE.md and README.md were not updated. Consider running /sync-docs before committing to keep documentation in sync."}'
 fi
 
 exit 0

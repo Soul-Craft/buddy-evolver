@@ -1,13 +1,13 @@
 ---
 name: docs-reviewer
-description: Compare actual project structure against CLAUDE.md and README.md to find documentation gaps, stale references, and incorrect paths. Use when asked to "check docs", "review documentation", "find doc gaps", or "sync docs".
+description: Compare actual project structure against docs/ARCHITECTURE.md and README.md to find documentation gaps, stale references, and incorrect paths. Use when asked to "check docs", "review documentation", "find doc gaps", or "sync docs".
 tools: [Read, Glob, Grep]
 model: haiku
 ---
 
 # Documentation Reviewer Agent
 
-You are reviewing the Buddy Evolver Claude Code plugin's documentation for accuracy. Compare what actually exists on disk against what CLAUDE.md and README.md claim exists, and produce a structured gap report.
+You are reviewing the Buddy Evolver Claude Code plugin's documentation for accuracy. Compare what actually exists on disk against what docs/ARCHITECTURE.md and README.md claim exists, and produce a structured gap report.
 
 ## Step 1: Discover what exists
 
@@ -29,36 +29,36 @@ Record each discovered item with its path.
 
 ## Step 2: Read documentation
 
-Read both `CLAUDE.md` and `README.md` in full.
+Read both `docs/ARCHITECTURE.md` and `README.md` in full.
 
 ## Step 3: Check for gaps
 
 For each discovered item, verify it is properly documented:
 
 **Skills** must appear in:
-- CLAUDE.md file tree (e.g., `skills/buddy-evolve/`)
-- CLAUDE.md Automations section (e.g., `### Skill: /buddy-evolve`)
+- docs/ARCHITECTURE.md file tree (e.g., `skills/buddy-evolve/`)
+- docs/ARCHITECTURE.md Automations section (e.g., `### Skill: /buddy-evolve`)
 - README.md Commands section (user-facing skills only: buddy-evolve, buddy-reset, buddy-status, audit-security)
 
 **Agents** must appear in:
-- CLAUDE.md file tree (with correct location: `agents/` vs `.claude-plugin/agents/`)
-- CLAUDE.md Automations section (e.g., `### Agent: cache-reviewer`)
+- docs/ARCHITECTURE.md file tree (with correct location: `agents/` vs `.claude-plugin/agents/`)
+- docs/ARCHITECTURE.md Automations section (e.g., `### Agent: cache-reviewer`)
 
 **Hooks** must appear in:
-- CLAUDE.md file tree (hook scripts)
-- CLAUDE.md Automations section (e.g., `### Hook: argument validation`)
+- docs/ARCHITECTURE.md file tree (hook scripts)
+- docs/ARCHITECTURE.md Automations section (e.g., `### Hook: argument validation`)
 - Referenced config file must actually contain the hook
 
 **Swift sources** must appear in:
-- CLAUDE.md Swift source layout section
+- docs/ARCHITECTURE.md Swift source layout section
 - Path must match actual location (`Sources/BuddyPatcher/` vs `Sources/BuddyPatcherLib/`)
 
 **Shell scripts** must appear in:
-- CLAUDE.md file tree
+- docs/ARCHITECTURE.md file tree
 
 ## Step 4: Check for stale references
 
-For each item documented in CLAUDE.md:
+For each item documented in docs/ARCHITECTURE.md:
 - Verify the file/directory actually exists on disk
 - Verify the path is correct
 - Verify any described behavior matches the actual code (spot-check hook configs, agent tool lists)
@@ -69,7 +69,7 @@ Format your output as:
 
 ```
 MISSING_FROM_DOCS:
-- [type] [path] — not documented in [CLAUDE.md|README.md] [section]
+- [type] [path] — not documented in [docs/ARCHITECTURE.md|README.md] [section]
 ...
 
 STALE_IN_DOCS:
