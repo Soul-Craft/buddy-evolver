@@ -36,7 +36,7 @@ flowchart LR
 | --- | --- | --- | --- |
 | `/buddy` guard: no skill named `buddy` | `scripts/test-docs.sh`, group 10 | in CI on a Mac and on Linux | built in |
 | Docs and architecture agree | `scripts/test-docs.sh` and `doc-sync` in `ci-quality.yml` | passes on Linux | built in |
-| Name and personality reach the native companion | a Mac session with Claude Code | not run yet | [#53](https://github.com/Soul-Craft/buddy-evolver/issues/53) |
+| Name and personality reach the native companion | a Mac session with Claude Code | fails at step 1 on Claude Code 2.1.332 (2026-11-25): no native `/buddy` command, no `companion` entry in `~/.claude.json`. Bug filed | [#53](https://github.com/Soul-Craft/buddy-evolver/issues/53) |
 | Six test tiers | `bash scripts/test-all.sh` on a Mac | pending a Mac session | each pull request |
 | CodeQL default setup | repository settings, from a Mac session | not configured | [#51](https://github.com/Soul-Craft/buddy-evolver/issues/51) |
 
