@@ -130,7 +130,7 @@ jobs:
              ```
 
           Results will appear either as a Check Run or a PR comment on this commit.
-          See CLAUDE.md for more detail on the testing architecture.'
+          See docs/ARCHITECTURE.md for more detail on the testing architecture.'
           else
               body='## Local tests failed
 
